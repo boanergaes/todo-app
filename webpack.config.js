@@ -22,6 +22,13 @@ module.exports = {
         //rules the setted up production env should follow
         rules: [
 
+            //to load html. incase i use img directly in html
+            {
+                test: /\.html$/,
+                use: "html-loader",
+                exclude: path.resolve(__dirname, 'src/index.html')
+            },
+
             //ues babel-loader to bundle for old web-browsers
             {
                 test: /\.js$/,
@@ -32,7 +39,10 @@ module.exports = {
             //for bundilg the css-loader
             {
                 test: /\.css$/,
-                use: [MiniCssExtractPlugin.loader, "css-loader"],
+                use: [
+                    "style-loader", 
+                    "css-loader"
+                ],
             },
 
             //for importing and addresssing images
@@ -40,7 +50,7 @@ module.exports = {
                 test: /\.(png|jpe?g|gif|svg)$/i,
                 type: "asset/resource",
                 generator: {
-                filename: "images/[name][ext][query]",
+                    filename: "images/[name][ext][query]",
                 },
             },
         ],
@@ -50,7 +60,7 @@ module.exports = {
     plugins: [
 
         new HtmlWebpackPlugin({
-            title: "FORGEZ ToDo App",
+            title: "Work Space",
             filename: "index.html", //the html file webpack creates?
             template: "./src/index.html",
         }),
