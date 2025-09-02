@@ -11,11 +11,14 @@
     --main-btn-bg-color: #22c55e;
     --main-btn-bg-color-hover: green;
     --thin-border-color: hsla(0, 0%, 47%, .5);
+    --medium-border-color: hsla(0, 0%, 87%, .8);
 
     --logo-text-font-family: "Jaro", sans-serif;
     --hero-header-font-family: Anton, sans-serif;
     /* --main-font-family: Average, serif; */
     --main-font-family: "JetBrains Mono", monospace;
+
+    --main-font-size: .78rem;
 
     --header-height: 5.9rem; 
     --aside-width: 320px;
@@ -31,6 +34,9 @@ body {
     background-color: var(--main-bg-color);
     color: var(--main-font-color);
     font-family: var(--main-font-family);
+    font-size: var(--main-font-size);
+    font-weight: 300;
+    letter-spacing: .03rem;
 }
 
 button {
@@ -47,8 +53,15 @@ button:has(svg) {
 
     display: flex;
     align-items: center;
+    padding: .18rem;
 
-    &:hover {
+    transition: 200ms;
+
+    &:not(#theme-btn):hover {
+        background-color: var(--lighter-bg-color-hover);
+    }
+
+    &:hover:is(#theme-btn) {
         opacity: .8;
     }
 }
@@ -150,7 +163,7 @@ aside {
     background-color: var(--main-bg-color);
     padding: 1.2rem .6rem;
     padding-bottom: 0;
-    border-radius: 16px 16px 16px 0;
+    border-radius: 16px 16px 0 0;
     box-shadow: 1px 2px 12px hsla(0, 0%, 0%, .4);
 }
 
@@ -207,10 +220,50 @@ aside {
     border: 1px solid var(--thin-border-color);
     border-radius: 8px;
     margin-bottom: .8rem;
+    cursor: pointer;
+    transition: 200ms;
+
+    &:hover {
+        background-color: var(--lighter-bg-color);
+    }
 
     & svg {
         width: 20px;
         height: 20px;
+    }
+
+    & input {
+        background-color: transparent;
+        border: none;
+        color: var(--main-font-color);
+        font-size: var(--main-font-size);
+        font-family: var(--main-font-family);
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    &:has(input:focus) {
+        border-color: var(--medium-border-color);
+    }
+}
+
+#project-list li {
+    & input {
+        background-color: transparent;
+        border: none;
+        color: var(--main-font-color);
+        font-size: var(--main-font-size);
+        font-family: var(--main-font-family);
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    &:has(input:focus) {
+        border-color: var(--medium-border-color);
     }
 }
 
@@ -224,9 +277,9 @@ aside {
     gap: .8rem;
 }
 
-.action {
+.actions {
     display: flex;
-    gap: .6rem;
+    gap: .3rem;
 }
 
 .plus {
@@ -307,29 +360,15 @@ aside {
 
 /* ============= main - todo list ============ */
 
-.project-title-display {
+.accessory {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: .6rem 2rem;
-    padding-bottom: 2.4rem;
+    padding: 0 .2rem;
 }
 
-.project-title {
+.tools {
     display: flex;
-    align-items: center;
-    gap: 1rem;
-    
-    & svg {
-        width: 32px;
-        height: 32px;
-    }
-}
-
-.project-info {
-    display: flex;
-    justify-content: start;
-    gap: 1rem;
+    gap: .6rem;
 }
 
 .color-code-container {
@@ -341,7 +380,7 @@ aside {
     display: flex;
     align-items: center;
     gap: .3rem;
-    font-size: .8rem;
+    font-size: .7rem;
     font-weight: 100;
 }
 
@@ -362,6 +401,46 @@ aside {
     }
 }
 
+.project-title-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .6rem .2rem;
+    padding-bottom: 2.4rem;
+}
+
+.project-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    
+    & svg {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+.project-info {
+    display: flex;
+    /* justify-content: start; */
+    gap: 1rem;
+}
+
+.due-date {
+    font-weight: 100;
+    font-size: smaller;
+    padding-top: .16rem;
+}
+
+.priority {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background-color: orange;
+    position: relative;
+}
+
 #add-todo {
-    margin-top: 2.4rem;
+    margin-top: 2rem;
 }
