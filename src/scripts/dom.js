@@ -1,5 +1,5 @@
 import { InvertIsProjAddBtnActive, isProjAddBtnActive } from ".";
-import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone } from "./storage";
+import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone, addSubTask, deleteSubTask, declareSubTaskDone } from "./storage";
 import { nextProjId, nextTaskId, nextSubTaskId,clearAllChildren, invalidInputAnimate } from "./utils";
 
 let projectList = document.getElementById('project-list');
@@ -219,7 +219,9 @@ function initSubTaskIntake(proj_id, task_id) {
         </div>
     `;
 
-    task.after(subTaskInput);
+    // the input field should appear below all the subtasks present if any
+    const subTaskList = document.getElementById(`${task_id}-sub-task-list`);
+    subTaskList ? subTaskList.after(subTaskInput) : task.after(subTaskInput);
     
     const cancelBtn = document.getElementById(`${task_id}-cancel-sub-task-creation`)
     const doneBtn = document.getElementById(`${task_id}-create-sub-task`)
@@ -335,6 +337,8 @@ export function createTaskElement(proj_id, task_id, description, due_date, prior
         // ignore it b/c it throws an error when you creat a new task and no need check task_status
     }
 
+    renderSubTasks(proj_id, task_id);
+
     checkBox.addEventListener('change', () => {
         declareTaskDone(proj_id, task_id, checkBox.checked);
     })
@@ -362,8 +366,10 @@ export function createTaskElement(proj_id, task_id, description, due_date, prior
 }
 
 function createSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
+    const Projects =  projectsJSON();
     let subTaskList = document.getElementById(`${task_id}-sub-task-list`);
     const subTask = document.createElement('li');
+    subTask.id = sub_task_id;
     const task = document.getElementById(task_id);
 
     if (!subTaskList) {
@@ -386,9 +392,28 @@ function createSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
         </div>
     `;
     subTaskList.appendChild(subTask);
+    addSubTask(proj_id, task_id, sub_task_id, sub_task_desc);
 
-    // add event listner to delet
-    // addSubTask()
+    const deleteBtn = document.getElementById(`${sub_task_id}-delete-sub-task`);
+    const subTaskCheck = document.getElementById(`${sub_task_id}-checkbox`);
+    
+    try {
+        const Projects = projectsJSON();
+        const sub_task_status = Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id]['sub_task_status'];
+        subTask.style.textDecoration = sub_task_status ? 'line-through' : 'none';
+        subTaskCheck.checked = sub_task_status;
+    } catch {
+        // throws err if it's the first time, ignore it
+    }
+
+    subTaskCheck.addEventListener('change', () => {
+        declareSubTaskDone(proj_id, task_id, sub_task_id, subTaskCheck.checked) 
+    })
+
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteSubTask(proj_id, task_id, sub_task_id);
+    })
 }
 
 export function renderProjects(n) {
@@ -465,6 +490,14 @@ export function renderTasks() {
     for (const task in tasks) {
         createTaskElement(proj_id, task, tasks[task]['description'], tasks[task]['due_date'], tasks[task]['priority'])
     }
+}
 
+export function renderSubTasks(proj_id, task_id) {
+    const Projects = projectsJSON();
+    const subTasks = Projects[proj_id]['tasks'][task_id]['sub_tasks'];
+
+    for (const subTask in subTasks) {
+        createSubTask(proj_id, task_id, subTask, subTasks[subTask]['description']);
+    }
 }
 

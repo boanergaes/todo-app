@@ -8,8 +8,8 @@
     --lighter-bg-color: hsl(0, 0%, 18%);
     --lighter-bg-color-hover: hsl(0, 0%, 24%);
     --main-font-color: white;
-    --main-btn-bg-color: #22c55e;
-    --main-btn-bg-color-hover: green;
+    --main-btn-bg-color: hsl(142, 71%, 30%);
+    --main-btn-bg-color-hover: hsl(142, 71%, 35%);
     --thin-border-color: hsla(0, 0%, 47%, .5);
     --medium-border-color: hsla(0, 0%, 87%, .8);
 
@@ -86,6 +86,7 @@ section.upper-wrapper {
 .header-wrapper {
     position: fixed;
     top: 0;
+    z-index: 1;
     width: 100%;
     padding: 0 2rem;
 }
@@ -139,14 +140,16 @@ header {
 
 .sign-up-btn {
     padding: .5rem 1.4rem;
-    /* background-color: var(--main-btn-bg-color); */
-    background-image: linear-gradient(-40deg, hsl(0, 0%, 10%), hsl(60, 75%, 16%));
+    /* background-image: linear-gradient(-40deg, hsl(0, 0%, 10%), hsl(60, 75%, 16%)); */
+    background-color: var(--main-btn-bg-color);
     border: 1px solid hsla(0, 0%, 47%, .5);
     color: var(--main-font-color);
     box-shadow: 0 0 10px -7px yellow;
+    transition: 200ms;
 
     &:hover {
-        background-image: linear-gradient(-40deg, hsl(0, 0%, 10%), hsl(60, 75%, 23%));
+        /* background-image: linear-gradient(-40deg, hsl(0, 0%, 10%), hsl(60, 75%, 23%)); */
+        background-color: var(--main-btn-bg-color-hover);
     }
 }
 
@@ -507,6 +510,10 @@ aside {
 
 .sub-task-input {
     margin-left: 3rem;
+
+    & input {
+        margin-left: .6rem;
+    }
 }
 
 /* -------------- Task input form ------------- */
@@ -550,10 +557,10 @@ aside {
 
 #create-task-btn, #edit-task-btn {
     grid-column: 1 / 3;
-    background-color: hsl(142, 71%, 30%);
+    background-color: var(--main-btn-bg-color);
 
     &:hover:is(#create-task-btn), &:hover:is(#edit-task-btn) {
-        background-color: hsl(142, 71%, 35%);
+        background-color: var(--main-btn-bg-color-hover);
     }
 }
 

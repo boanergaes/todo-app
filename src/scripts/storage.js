@@ -1,5 +1,4 @@
-import { renderProjects } from "./dom";
-import { Project } from "./factory"
+import { renderProjects, renderTasks } from "./dom";
 
 let localProjects = localStorage.getItem('Projects');
 
@@ -136,4 +135,66 @@ export function declareTaskDone(proj_id, task_id, task_done) {
     //update ui
     const task = document.getElementById(task_id);
     task.style.textDecoration = task_done ? 'line-through' : 'none';
+
+    // declare all subtasks done if task done
+    if (task_done) {
+        const subTasks = Projects[proj_id]['tasks'][task_id]['sub_tasks'];
+        for (const st in subTasks) {
+            declareSubTaskDone(proj_id, task_id, st, task_done, true);
+        }
+        renderTasks();
+    }
+}
+
+export function addSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
+    const Projects = projectsJSON();
+
+    if (!Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id]) {
+        const newSubTask = {
+            description: sub_task_desc,
+            sub_task_status: false
+        }
+        Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id] = newSubTask;
+        storeLocal('Projects', Projects);
+    }
+}
+
+export function deleteSubTask(proj_id, task_id, sub_task_id) {
+    const Projects = projectsJSON();
+
+    const deleteSubTask = document.getElementById(sub_task_id);
+    deleteSubTask.remove();
+
+    delete Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id];
+    storeLocal('Projects', Projects);
+}
+
+export function declareSubTaskDone(proj_id, task_id, sub_task_id, sub_task_done, passTaskDeclare) {
+    const Projects = projectsJSON();
+    Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id]['sub_task_status'] = sub_task_done;
+    storeLocal('Projects', Projects);
+   
+    const subTask = document.getElementById(sub_task_id);
+    subTask.style.textDecoration = sub_task_done ? 'line-through' : 'none';
+
+    // to prevent stack overflow if called by declareTaskDone()
+    if (!passTaskDeclare) {
+        if (allSubTasksDone(proj_id, task_id)) {
+            console.log('all checker called');
+            declareTaskDone(proj_id, task_id, true); 
+            renderTasks();
+        } else {
+            declareTaskDone(proj_id, task_id, false);
+            renderTasks();
+        }
+    }
+}
+
+function allSubTasksDone(proj_id, task_id) {
+    const Projects = projectsJSON();
+    const subTasks = Projects[proj_id]['tasks'][task_id]['sub_tasks'];
+    for (const st in subTasks) {
+        if (!subTasks[st]['sub_task_status']) return false;
+    }
+    return true;
 }
