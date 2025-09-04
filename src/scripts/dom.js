@@ -1,29 +1,28 @@
 import { InvertIsProjAddBtnActive, isProjAddBtnActive } from ".";
-import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId } from "./storage";
-import { nextProjId, nextTaskId } from "./utils";
+import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone } from "./storage";
+import { nextProjId, nextTaskId, nextSubTaskId,clearAllChildren, invalidInputAnimate } from "./utils";
 
 let projectList = document.getElementById('project-list');
 
 let isTaskAddBtnActive = true;
+let isEditTaskBtnActive = true;
+let isSubTaskAddBtnActive = true;
 
 // to make sure the user don't keep touching the add task button before finishing their task adding session.
 export function InvertIsTaskAddBtnActive() {
     isTaskAddBtnActive = !isTaskAddBtnActive;
 }
 
-function invalidInputAnimate(elem) {
-    elem.animate (
-        [
-            { borderColor: 'var(--thin-border-color)', boxShadow: 'none' },
-            { borderColor: 'red', boxShadow: '0 0 20px red' }
-        ],
-        {
-            duration: 160,
-            iterations: 2
-        }
-    )
+// to make sure the user don't keep touching the edit task button before finishing their task editing session.
+export function InvertIsEditTaskBtnActive() {
+    isEditTaskBtnActive = !isEditTaskBtnActive;
 }
 
+export function InvertIsSubTaskAddBtnActive() {
+    isSubTaskAddBtnActive = !isSubTaskAddBtnActive;
+}
+
+// intended to let the user edit only the parts they want -- figure it out later
 export function initProjectIntake() {
     let projectPromt = document.createElement('li');
 
@@ -111,17 +110,142 @@ export function initTaskIntake(proj_id) {
     const doneBtn = document.getElementById(`create-task-btn`);
     const cancelBtn = document.getElementById('cancel-task-creation-btn');
     
-    doneBtn.addEventListener('click', (e) => {
-        const due_date = dueDateInput.value ? dueDateInput : 'No Due Date';
-        const priority = priorityInput.value ? priorityInput : 'Eventually';
+    function takeCareOfCreateTask() {
+        const due_date = dueDateInput.value ? dueDateInput.value : 'No Due Date';
+        const priority = priorityInput.value ? priorityInput.value : 'Eventually';
         const description = descriptionInput.value;
-        e.preventDefault();
         if (description) {
-            console.log('hello from doneBtn')
-            createTaskElement(proj_id, nextTaskId(), description, due_date, priority);
+            createTaskElement(proj_id, nextTaskId(proj_id), description, due_date, priority);
             InvertIsTaskAddBtnActive();
             inputForm.remove();
         } else invalidInputAnimate(descriptionInput);
+    }
+
+    doneBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        takeCareOfCreateTask();
+    })
+
+    descriptionInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            takeCareOfCreateTask();
+        }
+    })
+
+    cancelBtn.addEventListener('click', () => {
+        inputForm.remove();
+        InvertIsTaskAddBtnActive();
+    })
+}
+
+function initEditTaskInput(proj_id, task_id) {
+    const oldTask = document.getElementById(`${task_id}`);
+    const taskList = document.getElementById('todo-list');
+    const inputForm = document.createElement('form');
+    inputForm.id = 'edit-task-input-form';
+    inputForm.innerHTML = `
+        <input type="text" name="edit-task-input" id="edit-task-input" placeholder="New version of the task...">
+        <div class="date-input-container">
+            <label for="edit-due-date-input">New Due date:</label>
+            <input type="date" name="edit-due-date-input" id="edit-due-date-input">
+        </div>
+        <div class="prio-input-container">
+            <label for="edit-priority-input">New Priority:</label>
+            <select name="edit-priority-input" id="edit-priority-input">
+                <option value="Eventually">Eventually</option>
+                <option value="Soon">Soon</option>
+                <option value="Urgent">Urgent</option>
+            </select>
+        </div>
+        <button class="task-creation-form-btn" id="edit-task-btn" title="Done">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"/></svg>
+        </button>
+
+        <button class="task-creation-form-btn" id="cancel-task-edit-btn" title="Cancel">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+    `;
+    // add inputForm after oldtask
+    oldTask.after(inputForm);
+
+    const newDescriptionInput = document.getElementById('edit-task-input');
+    const newDdueDateInput = document.getElementById('edit-due-date-input'); 
+    const newPriorityInput = document.getElementById('edit-priority-input');
+
+    const doneBtn = document.getElementById(`edit-task-btn`);
+    const cancelBtn = document.getElementById('cancel-task-edit-btn');
+    
+    function takeCareOfEditTask() {
+        const new_due_date = newDdueDateInput.value;
+        const new_priority = newPriorityInput.value;
+        const new_description = newDescriptionInput.value;
+
+        editTask(proj_id, task_id, new_description, new_due_date, new_priority);
+        renderTasks();
+        InvertIsEditTaskBtnActive();
+        inputForm.remove();
+    }
+
+    doneBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        takeCareOfEditTask();
+    })
+
+    newDescriptionInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            takeCareOfEditTask();
+        }
+    })
+
+    cancelBtn.addEventListener('click', () => {
+        inputForm.remove();
+        InvertIsEditTaskBtnActive();
+    })
+}
+
+function initSubTaskIntake(proj_id, task_id) {
+    const task = document.getElementById(task_id);
+    const subTaskInput = document.createElement('li');
+    subTaskInput.classList.add('sub-task-input');
+    subTaskInput.innerHTML = `
+        <input type="text" name="${task_id}-sub-task-desc-input" id="${task_id}-sub-task-desc-input" placeholder="Sub task, procedure, steps..." size="28">
+        <div class="actions">
+            <button id="${task_id}-cancel-sub-task-creation" title="Cancel">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <button id="${task_id}-create-sub-task" title="Done">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"/></svg>
+            </button>
+        </div>
+    `;
+
+    task.after(subTaskInput);
+    
+    const cancelBtn = document.getElementById(`${task_id}-cancel-sub-task-creation`)
+    const doneBtn = document.getElementById(`${task_id}-create-sub-task`)
+    
+    const subTaskDescInput = document.getElementById(`${task_id}-sub-task-desc-input`)
+    
+    function takeCareOfSubTask() {
+        const sub_task_desc = subTaskDescInput.value;
+        if (sub_task_desc) {
+            createSubTask(proj_id, task_id, nextSubTaskId(task_id), sub_task_desc);
+            InvertIsSubTaskAddBtnActive();
+            subTaskInput.remove();
+        } else invalidInputAnimate(subTaskInput);
+    }
+
+    doneBtn.addEventListener('click', () => {
+        takeCareOfSubTask();
+    })
+
+    subTaskDescInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') takeCareOfSubTask()
+    })
+
+    cancelBtn.addEventListener('click', () => {
+        subTaskInput.remove();
+        InvertIsSubTaskAddBtnActive();
     })
 }
 
@@ -156,7 +280,7 @@ export function createProjectElement(proj_id, proj_title) {
         deleteProject(proj_id);
     })
 
-    newProject.addEventListener('click', (e) => {
+    newProject.addEventListener('click', () => {
         setCurrProjectId(proj_id);
         renderTasks();
     })
@@ -191,8 +315,80 @@ export function createTaskElement(proj_id, task_id, description, due_date, prior
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </button>
         </div>
-    `
+    `;
+
+    
     taskList.insertBefore(task, addTaskBtn);
+    addTask(proj_id, task_id, description, due_date, priority);
+    
+    // add event listener for the buttons---------------
+    const addSubTaskBtn = document.getElementById(`${task_id}-add-sub-task`);
+    const editTaskBtn = document.getElementById(`${task_id}-edit-task`);
+    const deleteTaskBtn = document.getElementById(`${task_id}-task-delete`);
+    const checkBox = document.getElementById(`${task_id}-checkbox`)
+    
+    try {
+        const task_status = Projects[proj_id]['tasks'][task_id]['task_status'];
+        task.style.textDecoration = task_status ? 'line-through' : 'none';
+        checkBox.checked = task_status;
+    } catch (err) {
+        // ignore it b/c it throws an error when you creat a new task and no need check task_status
+    }
+
+    checkBox.addEventListener('change', () => {
+        declareTaskDone(proj_id, task_id, checkBox.checked);
+    })
+
+    addSubTaskBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isSubTaskAddBtnActive) {
+            initSubTaskIntake(proj_id, task_id);
+            InvertIsSubTaskAddBtnActive();
+        }
+    })
+
+    editTaskBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isEditTaskBtnActive) {
+            initEditTaskInput(proj_id, task_id);
+            InvertIsEditTaskBtnActive();
+        } else invalidInputAnimate(task)
+    })
+
+    deleteTaskBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteTask(proj_id, task_id);
+    })
+}
+
+function createSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
+    let subTaskList = document.getElementById(`${task_id}-sub-task-list`);
+    const subTask = document.createElement('li');
+    const task = document.getElementById(task_id);
+
+    if (!subTaskList) {
+        subTaskList = document.createElement('ul');
+        subTaskList.id = `${task_id}-sub-task-list`;
+        subTaskList.classList.add('sub-task-list');
+    }
+
+    task.after(subTaskList);
+
+    subTask.innerHTML = `
+        <div class="sub-task-content">
+            <input type="checkbox" name="${sub_task_id}-checkbox" id="${sub_task_id}-checkbox">
+            <label for="${sub_task_id}-checkbox">${sub_task_desc}</label>
+        </div>
+        <div class="actions">
+            <button id="${sub_task_id}-delete-sub-task">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash2-icon lucide-trash-2"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
+        </div>
+    `;
+    subTaskList.appendChild(subTask);
+
+    // add event listner to delet
+    // addSubTask()
 }
 
 export function renderProjects(n) {
@@ -215,6 +411,7 @@ export function renderProjects(n) {
 
 export function renderTasks() {
     const taskList = document.getElementById('todo-list');
+    clearAllChildren(taskList);
 
     const proj_id = getCurrProjectId();
 
@@ -230,8 +427,8 @@ export function renderTasks() {
     if (rmv) rmv.remove();
 
     const Projects = projectsJSON();
-    const proj_title = Projects[proj_id]['title'];
     const project_title_display = document.createElement('div');
+    const proj_title = Projects[proj_id]['title'];
     project_title_display.classList.add('project-title-display')
     project_title_display.innerHTML = `
             <div class="project-title-container">
@@ -264,6 +461,10 @@ export function renderTasks() {
     })
 
     const tasks = Projects[proj_id]['tasks'];
+
+    for (const task in tasks) {
+        createTaskElement(proj_id, task, tasks[task]['description'], tasks[task]['due_date'], tasks[task]['priority'])
+    }
 
 }
 

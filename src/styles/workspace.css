@@ -76,11 +76,19 @@ section.upper-wrapper {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    padding-top: .01rem;
-
+    padding-top: 6rem;
+    
+    
 }
 
 /* =========== header ============== */ 
+
+.header-wrapper {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 0 2rem;
+}
 
 header {
     display: flex;
@@ -89,7 +97,7 @@ header {
     border: 1px solid var(--thin-border-color);
     border-radius: 10px;
     padding: .6rem 2rem;
-    margin: 1rem max(2rem, 5vw);
+    margin: 1rem 0;
     background-color: hsla(0, 0%, 13%, .2);
     backdrop-filter: blur(10px);
     box-shadow: 0 3px 10px hsla(0, 0%, 0%, .3);
@@ -155,7 +163,7 @@ header {
 aside {
     display: flex;
     flex-direction: column;
-    position: absolute;
+    position: fixed;
     top: var(--header-height);
     height: calc(100vh - var(--header-height));
     width: var(--aside-width);
@@ -212,7 +220,7 @@ aside {
     list-style-type: none;
 }
 
-#project-list li, .todo-list li {
+#project-list li, #todo-list li {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -453,25 +461,57 @@ aside {
     width: 9px;
     height: 9px;
     border-radius: 50%;
+    position: relative;
+    transition: all 110ms ease-in;
+
+    &:hover {
+        border-radius: 16px;
+        width: 20px;
+    }
 }
 
 .Urgent {
     background-color: red;
+
+    &:hover {
+        box-shadow: 0 0 10px red;
+    }
 }
 .Soon {
     background-color: yellow;
+
+    &:hover {
+        box-shadow: 0 0 10px yellow;
+    }
 }
 .Eventually {
     background-color: orange;
+
+    &:hover {
+        box-shadow: 0 0 6px orange;
+    }
 }
 
 #add-todo {
     margin-top: 2rem;
 }
 
+.sub-task-list {
+    padding-left: 3rem;
+}
+
+.sub-task-content {
+    display: flex;
+    gap: .8rem;
+}
+
+.sub-task-input {
+    margin-left: 3rem;
+}
+
 /* -------------- Task input form ------------- */
 
-#task-input-form {
+#task-input-form, #edit-task-input-form {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(2, 1fr);
@@ -483,7 +523,8 @@ aside {
     border-radius: 12px;
 }
 
-#task-input-form input, #task-input-form select  {
+#task-input-form input, #task-input-form select, 
+#edit-task-input-form input, #edit-task-input-form select {
     background-color: var(--lighter-bg-color);
     color: var(--main-font-color);
     font-family: var(--main-font-family);
@@ -497,7 +538,7 @@ aside {
     }
 }
 
-#new-task-input {
+#new-task-input, #edit-task-input {
     grid-column: 1 / 3;
 }
 
@@ -507,20 +548,20 @@ aside {
     transition: 200ms;
 }
 
-#create-task-btn {
+#create-task-btn, #edit-task-btn {
     grid-column: 1 / 3;
     background-color: hsl(142, 71%, 30%);
 
-    &:hover:is(#create-task-btn) {
+    &:hover:is(#create-task-btn), &:hover:is(#edit-task-btn) {
         background-color: hsl(142, 71%, 35%);
     }
 }
 
-#cancel-task-creation-btn {
+#cancel-task-creation-btn, #cancel-task-edit-btn {
     grid-column: 3 / -1;
     border: 1px solid var(--thin-border-color);
 
-    &:hover:is(#cancel-task-creation-btn) {
+    &:hover:is(#cancel-task-creation-btn), &:hover:is(#cancel-task-edit-btn) {
         background-color: var(--lighter-bg-color);
     }
 }

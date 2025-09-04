@@ -1,5 +1,18 @@
 import { projectsJSON, storeLocal } from "./storage";
 
+export function invalidInputAnimate(elem) {
+    elem.animate (
+        [
+            { borderColor: 'var(--thin-border-color)', boxShadow: 'none' },
+            { borderColor: 'red', boxShadow: '0 0 20px red' }
+        ],
+        {
+            duration: 160,
+            iterations: 2
+        }
+    )
+}
+
 export function nextProjId() {
     // the default projets have ids 1 - 4
     // the new project's ids start at 10 and increases indefinitly even if projects are deleted
@@ -45,4 +58,40 @@ export function nextTaskId(proj_id) {
     parsedTaskIds[proj_id] = newid + 1;
     storeLocal('validTaskIds', parsedTaskIds);
     return proj_id + '-t_' + newid;
+}
+
+export function nextSubTaskId(task_id) {
+    // sub-task ids have 'p_1-t_2-st_3' format where p_1 is project id and t_2 is the task id and st_3 is the sub-task id
+    //valid sub-task ids are tracked by incrementing them for each task separately
+
+    const validSubTaskIds = localStorage.getItem('validSubTaskIds');
+
+    if (!validSubTaskIds) {
+        const idmap = {
+            // return 1 and store 2
+            [`${task_id}`]: 2
+        }
+        storeLocal('validSubTaskIds', idmap);
+        return task_id + '-st_' + 1;
+    }
+
+    let parsedSubTaskIds = JSON.parse(validSubTaskIds);
+
+    if (!parsedSubTaskIds[task_id]) {
+        // return 1 and store 2
+        parsedSubTaskIds[task_id] = 2
+        storeLocal('validSubTaskIds', parsedSubTaskIds);
+        return task_id + '-st_' + 1
+    }
+
+    const newid = parsedSubTaskIds[task_id];
+    parsedSubTaskIds[task_id] = newid + 1;
+    storeLocal('validSubTaskIds', parsedSubTaskIds);
+    return task_id + '-st_' + newid;
+}
+
+export function clearAllChildren(elem) {
+    while (elem.firstChild) {
+        elem.firstChild.remove();
+    }
 }
