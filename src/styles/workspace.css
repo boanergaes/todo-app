@@ -21,7 +21,7 @@
     --main-font-size: .78rem;
 
     --header-height: 5.9rem; 
-    --aside-width: 320px;
+    --aside-width: 350px;
 }
 
 * {
@@ -361,7 +361,7 @@ aside {
 
 .hero-big-text {
     font-family: var(--hero-header-font-family);
-    font-size: clamp(3rem, 6vw, 6rem);
+    font-size: clamp(2.6rem, 5.48vw, 6rem);
     letter-spacing: .26rem;
     word-spacing: .8rem;
     background-image: linear-gradient(135deg, red, purple, rebeccapurple, red);
@@ -391,6 +391,10 @@ aside {
     display: flex;
     justify-content: space-between;
     padding: 0 .2rem;
+}
+
+#sidebar-toggle-btn {
+    display: none;
 }
 
 .tools {
@@ -464,7 +468,6 @@ aside {
     width: 9px;
     height: 9px;
     border-radius: 50%;
-    position: relative;
     transition: all 110ms ease-in;
 
     &:hover {
@@ -565,10 +568,100 @@ aside {
 }
 
 #cancel-task-creation-btn, #cancel-task-edit-btn {
-    grid-column: 3 / -1;
+    grid-column: 3 / 5;
     border: 1px solid var(--thin-border-color);
 
     &:hover:is(#cancel-task-creation-btn), &:hover:is(#cancel-task-edit-btn) {
         background-color: var(--lighter-bg-color);
+    }
+}
+
+/* fix the grid layout */
+@media screen and (min-width: 722px) and (max-width: 976px) {
+    #task-input-form, #edit-task-input-form {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+    }
+    #new-task-input, #edit-task-input {
+        grid-column: 1 / -1;
+    }
+    .date-input-container, .prio-input-container {
+        grid-row: 2;
+    }
+    #create-task-btn, #edit-task-btn {
+        grid-column: 1 / 2;
+    }
+    #cancel-task-creation-btn, #cancel-task-edit-btn {
+        grid-column: 2 / -1;
+    }
+}
+
+@media  screen and (width < 722px) {
+    main, .hero {
+        margin-left: 0;
+        text-align: center;
+    }
+    aside {
+        display: none;
+    }
+    #sidebar-toggle-btn {
+        display: inline-block;
+    }
+}
+
+@media screen and (width < 550px) {
+    .logo-text {
+        font-size: 1.27rem;
+    }
+    .logo svg {
+        width: 1.6rem;
+        height: 1.6rem;
+    }
+    .sign-up-btn {
+        padding: .3rem 1rem;
+        font-size: .8rem;
+    }
+    
+    .header-wrapper {
+        padding: 0 .6rem;
+    }
+    aside {
+        width: 100vw;
+        /* height: calc(100vh - var(--header-height)) */
+        height: calc(100vh - 75px);
+        top: 75px;
+    }
+    #task-input-form, #edit-task-input-form {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+    }
+    #new-task-input, #edit-task-input {
+        grid-column: 1 / -1;
+    }
+    .date-input-container, .prio-input-container {
+        grid-row: 2;
+    }
+    #create-task-btn, #edit-task-btn {
+        grid-column: 1 / 2;
+    }
+    #cancel-task-creation-btn, #cancel-task-edit-btn {
+        grid-column: 2 / -1;
+    }
+}
+
+@media screen and (width < 400px) {
+    section.upper-wrapper {
+        padding-top: 4rem;
+    }
+
+    header {
+        padding: .6rem;
+        margin: .6rem 0;
+    }
+    #todo-list {
+        padding-top: 0rem;
+    }
+    .project-title-display {
+        padding-bottom: 1rem;
     }
 }
