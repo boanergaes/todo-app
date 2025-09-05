@@ -1,6 +1,7 @@
 import { InvertIsProjAddBtnActive, isProjAddBtnActive } from ".";
 import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone, addSubTask, deleteSubTask, declareSubTaskDone, storeLocal } from "./storage";
 import { nextProjId, nextTaskId, nextSubTaskId,clearAllChildren, invalidInputAnimate, declareTaskUi } from "./utils";
+import { format } from 'date-fns';
 
 let projectList = document.getElementById('project-list');
 
@@ -115,7 +116,9 @@ export function initTaskIntake(proj_id) {
         const priority = priorityInput.value ? priorityInput.value : 'Eventually';
         const description = descriptionInput.value;
         if (description) {
-            createTaskElement(proj_id, nextTaskId(proj_id), description, due_date, priority);
+            const date = new Date(due_date);
+            const fmtDate = format(date ,"EEE MMM d yyyy");
+            createTaskElement(proj_id, nextTaskId(proj_id), description, fmtDate, priority);
             InvertIsTaskAddBtnActive();
             inputForm.remove();
         } else invalidInputAnimate(descriptionInput);
@@ -259,7 +262,7 @@ export function createProjectElement(proj_id, proj_title) {
     newProject.innerHTML = `
         <div class="project-content">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-todo-icon lucide-list-todo"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><rect x="3" y="4" width="6" height="6" rx="1"/></svg>
-            <p>${proj_title}</p>
+            <p id='${proj_id}-title-para'>${proj_title}</p>
         </div>
         
         <div class="actions">
@@ -271,9 +274,8 @@ export function createProjectElement(proj_id, proj_title) {
     projectList.appendChild(newProject);
     addProject(proj_id, proj_title);
 
-    // add event listner to the newly created project li's delete btn
-
     const deleteProjBtn = document.getElementById(`${proj_id}-dlt`);
+
     deleteProjBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (getCurrProjectId() === proj_id) {
@@ -464,7 +466,8 @@ export function renderTasks() {
     project_title_display.innerHTML = `
             <div class="project-title-container">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-todo-icon lucide-list-todo"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><rect x="3" y="4" width="6" height="6" rx="1"/></svg>
-                <h1 id="project-title">${proj_title}</h1>
+                <!-- <h1 id="project-title">${proj_title}</h1> -->
+                <input type='text' class='project-title' id='${proj_id}-proj-title' value='${proj_title}'>
             </div>
 
             <div class="project-info">
@@ -496,10 +499,21 @@ export function renderTasks() {
     taskList.appendChild(project_title_display)
     taskList.appendChild(addTaskBtn);
 
+    const titleInput = document.getElementById(`${proj_id}-proj-title`)
     const notesBtn = document.getElementById(`${proj_id}-notes`);
     const notesDisplay = document.getElementById('notes-display');
     const cancelNotesBtn = document.getElementById('cancel-notes');
     const notesArea = document.getElementById('notes-area')
+
+    
+    titleInput.addEventListener('change', () => {
+        Projects[proj_id]['title'] = titleInput.value;
+        storeLocal('Projects', Projects);
+
+        const projLi = document.getElementById(`${proj_id}-title-para`)
+        projLi.textContent = titleInput.value;
+    })
+
 
     notesBtn.addEventListener('click', () => {
         const noteContent = Projects[proj_id]['note'];
