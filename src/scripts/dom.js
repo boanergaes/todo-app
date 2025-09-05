@@ -285,6 +285,12 @@ export function createProjectElement(proj_id, proj_title) {
     newProject.addEventListener('click', () => {
         setCurrProjectId(proj_id);
         renderTasks();
+        
+        if (window.innerWidth < 740) {
+            const sideBar = document.getElementById('side-bar');
+            if (sideBar.classList.contains('side-bar-on')) sideBar.classList.remove('side-bar-on');
+            sideBar.classList.add('side-bar-off');
+        }
     })
 }
 

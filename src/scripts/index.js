@@ -31,3 +31,26 @@ addProjectBtn.addEventListener('click', () => {
         InvertIsProjAddBtnActive();
     }
 });
+
+const sideBar = document.getElementById('side-bar');
+const sideBarOnBtn = document.getElementById('sidebar-toggle-btn');
+const sideBarOffBtn = document.getElementById('aside-off');
+
+sideBarOnBtn.addEventListener('click', () => {
+    if (sideBar.classList.contains('side-bar-off')) sideBar.classList.remove('side-bar-off');
+    sideBar.classList.add('side-bar-on');
+})
+
+sideBarOffBtn.addEventListener('click', () => {
+    if (sideBar.classList.contains('side-bar-on')) sideBar.classList.remove('side-bar-on');
+    sideBar.classList.add('side-bar-off');
+})
+
+// it should have no animation if window size >= 740px
+window.addEventListener('resize', () => {
+    if (window.innerWidth >= 740) {
+        if (sideBar.classList.contains('side-bar-off')) sideBar.classList.remove('side-bar-off');
+        if (sideBar.classList.contains('side-bar-on')) sideBar.classList.remove('side-bar-on');
+    }
+})
+
