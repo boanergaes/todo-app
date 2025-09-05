@@ -1,4 +1,5 @@
-import { projectsJSON, storeLocal } from "./storage";
+import { storeLocal } from "./storage";
+import { format } from 'date-fns';
 
 export function invalidInputAnimate(elem) {
     elem.animate (
@@ -11,6 +12,13 @@ export function invalidInputAnimate(elem) {
             iterations: 2
         }
     )
+}
+
+export function formatDate(date) {
+    console.log('date:', date)
+    if (date === 'No Due Date') return date;
+    const new_date = new Date(date);
+    return format(new_date ,"EEE MMM d yyyy");
 }
 
 export function declareTaskUi(id, status) {

@@ -59,6 +59,14 @@
     & #dark-icon {
         display: flex;
     }
+
+    & .code, .priority {
+        border-color: hsla(0, 0%, 0%, .4);
+    }
+
+    &.due-date {
+        font-weight: 400;
+    }
 }
 
 * {
@@ -478,9 +486,10 @@ aside {
 
 .code {
     /* display: block; */
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
+    border: 1px solid transparent;
     
     &#high {
         background-color: red;
@@ -574,15 +583,16 @@ aside {
 }
 
 .due-date {
-    font-weight: 100;
+    font-weight: 300;
     font-size: smaller;
     padding-top: .16rem;
 }
 
 .priority {
     display: inline-block;
-    width: 9px;
-    height: 9px;
+    width: 10px;
+    height: 10px;
+    border: 1px solid transparent;
     border-radius: 50%;
     transition: all 110ms ease-in;
 
@@ -596,14 +606,14 @@ aside {
     background-color: red;
 
     &:hover {
-        box-shadow: 0 0 10px red;
+        box-shadow: 0 0 6px red;
     }
 }
 .Soon {
     background-color: yellow;
 
     &:hover {
-        box-shadow: 0 0 10px yellow;
+        box-shadow: 0 0 5px yellow;
     }
 }
 .Eventually {

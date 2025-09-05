@@ -1,7 +1,6 @@
 import { InvertIsProjAddBtnActive } from ".";
 import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone, addSubTask, deleteSubTask, declareSubTaskDone, storeLocal } from "./storage";
-import { nextProjId, nextTaskId, nextSubTaskId,clearAllChildren, invalidInputAnimate, declareTaskUi } from "./utils";
-import { format } from 'date-fns';
+import { nextProjId, nextTaskId, nextSubTaskId,clearAllChildren, invalidInputAnimate, declareTaskUi, formatDate } from "./utils";
 
 let projectList = document.getElementById('project-list');
 
@@ -116,8 +115,7 @@ export function initTaskIntake(proj_id) {
         const priority = priorityInput.value ? priorityInput.value : 'Eventually';
         const description = descriptionInput.value;
         if (description) {
-            const date = new Date(due_date);
-            const fmtDate = format(date ,"EEE MMM d yyyy");
+            const fmtDate = formatDate(due_date);
             createTaskElement(proj_id, nextTaskId(proj_id), description, fmtDate, priority);
             InvertIsTaskAddBtnActive();
             inputForm.remove();
@@ -183,7 +181,7 @@ function initEditTaskInput(proj_id, task_id) {
         const new_priority = newPriorityInput.value;
         const new_description = newDescriptionInput.value;
 
-        editTask(proj_id, task_id, new_description, new_due_date, new_priority);
+        editTask(proj_id, task_id, new_description, formatDate(new_due_date), new_priority);
         renderTasks();
         InvertIsEditTaskBtnActive();
         inputForm.remove();
