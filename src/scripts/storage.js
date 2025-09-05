@@ -1,4 +1,5 @@
 import { renderProjects, renderTasks } from "./dom";
+import { declareTaskUi } from "./utils";
 
 let localProjects = localStorage.getItem('Projects');
 
@@ -69,16 +70,17 @@ export function addProject(proj_id, title) {
 
 export function deleteProject(proj_id) {
     // remove the element from DOM
+    const Projects = projectsJSON();
+    const validTaskIds = JSON.parse(localStorage.getItem('validTaskIds'));
     const deletedProj = document.getElementById(proj_id);
+
     deletedProj.remove();
 
     // remove it from local storage
-    let Projects = projectsJSON();
     delete Projects[proj_id];
     storeLocal('Projects', Projects);
 
     // remove its task id tracker 
-    let validTaskIds = JSON.parse(localStorage.getItem('validTaskIds'));
     delete validTaskIds[proj_id];
     storeLocal('validTaskIds', validTaskIds);
 
@@ -103,14 +105,20 @@ export function addTask(proj_id, task_id, description, due_date, priority) {
 }
 
 export function deleteTask(proj_id, task_id) {
+    const Projects = projectsJSON();
+    const validSubTaskIds = JSON.parse(localStorage.getItem('validSubTaskIds'));
     const deleteTask = document.getElementById(task_id);
-    deleteTask.remove();
     const subTaskList = document.getElementById(`${task_id}-sub-task-list`);
+
+    deleteTask.remove();
     if (subTaskList) subTaskList.remove();
  
-    let Projects = projectsJSON();
     delete Projects[proj_id]['tasks'][task_id];
     storeLocal('Projects', Projects);
+
+    // delete it's subtask tracker
+    delete validSubTaskIds[task_id];
+    storeLocal('validSubTaskIds', validSubTaskIds);
 }
 
 export function editTask(proj_id, task_id, new_description, new_due_date, new_priority) {
@@ -135,8 +143,7 @@ export function declareTaskDone(proj_id, task_id, task_done) {
     storeLocal('Projects', Projects)
 
     //update ui
-    const task = document.getElementById(task_id);
-    task.style.textDecoration = task_done ? 'line-through' : 'none';
+    declareTaskUi(task_id, task_done);
 
     // declare all subtasks done if task done
     if (task_done) {
@@ -144,7 +151,6 @@ export function declareTaskDone(proj_id, task_id, task_done) {
         for (const st in subTasks) {
             declareSubTaskDone(proj_id, task_id, st, task_done, true);
         }
-        renderTasks();
     }
 }
 
@@ -176,18 +182,14 @@ export function declareSubTaskDone(proj_id, task_id, sub_task_id, sub_task_done,
     Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id]['sub_task_status'] = sub_task_done;
     storeLocal('Projects', Projects);
    
-    const subTask = document.getElementById(sub_task_id);
-    subTask.style.textDecoration = sub_task_done ? 'line-through' : 'none';
+    declareTaskUi(sub_task_id, sub_task_done);
 
     // to prevent stack overflow if called by declareTaskDone()
     if (!passTaskDeclare) {
         if (allSubTasksDone(proj_id, task_id)) {
-            console.log('all checker called');
             declareTaskDone(proj_id, task_id, true); 
-            renderTasks();
         } else {
             declareTaskDone(proj_id, task_id, false);
-            renderTasks();
         }
     }
 }

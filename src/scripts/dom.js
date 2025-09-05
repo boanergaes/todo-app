@@ -1,6 +1,6 @@
 import { InvertIsProjAddBtnActive, isProjAddBtnActive } from ".";
-import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone, addSubTask, deleteSubTask, declareSubTaskDone } from "./storage";
-import { nextProjId, nextTaskId, nextSubTaskId,clearAllChildren, invalidInputAnimate } from "./utils";
+import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone, addSubTask, deleteSubTask, declareSubTaskDone, storeLocal } from "./storage";
+import { nextProjId, nextTaskId, nextSubTaskId,clearAllChildren, invalidInputAnimate, declareTaskUi } from "./utils";
 
 let projectList = document.getElementById('project-list');
 
@@ -231,6 +231,8 @@ function initSubTaskIntake(proj_id, task_id) {
     function takeCareOfSubTask() {
         const sub_task_desc = subTaskDescInput.value;
         if (sub_task_desc) {
+            const Projects = projectsJSON();
+            if (Projects[proj_id]['tasks'][task_id]['task_status']) declareTaskDone(proj_id, task_id, false);
             createSubTask(proj_id, task_id, nextSubTaskId(task_id), sub_task_desc);
             InvertIsSubTaskAddBtnActive();
             subTaskInput.remove();
@@ -337,8 +339,7 @@ export function createTaskElement(proj_id, task_id, description, due_date, prior
     
     try {
         const task_status = Projects[proj_id]['tasks'][task_id]['task_status'];
-        task.style.textDecoration = task_status ? 'line-through' : 'none';
-        checkBox.checked = task_status;
+        declareTaskUi(task_id, task_status);
     } catch (err) {
         // ignore it b/c it throws an error when you creat a new task and no need check task_status
     }
@@ -406,8 +407,7 @@ function createSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
     try {
         const Projects = projectsJSON();
         const sub_task_status = Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id]['sub_task_status'];
-        subTask.style.textDecoration = sub_task_status ? 'line-through' : 'none';
-        subTaskCheck.checked = sub_task_status;
+        declareTaskUi(sub_task_id, sub_task_status);
     } catch {
         // throws err if it's the first time, ignore it
     }
@@ -471,6 +471,20 @@ export function renderTasks() {
                 <button id="${proj_id}-notes">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sticky-note-icon lucide-sticky-note"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/><title>Sticky notes</title></svg>
                 </button>
+
+                <div class="notes-display" id="notes-display">
+                    <div class="notes-accessory">
+                        <button id="cancel-notes">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </button>
+                    </div>
+
+                    <div class="textarea-container">
+                        <textarea id="notes-area">
+                            
+                        </textarea>
+                    </div>
+                </div>
             </div>
     `;
     const addTaskBtn = document.createElement('button');
@@ -479,9 +493,28 @@ export function renderTasks() {
     addTaskBtn.classList.add('plus');
     addTaskBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-icon lucide-plus"><path d="M5 12h14"/><path d="M12 5v14"/><title>Add task</title></svg>';
 
-    
     taskList.appendChild(project_title_display)
     taskList.appendChild(addTaskBtn);
+
+    const notesBtn = document.getElementById(`${proj_id}-notes`);
+    const notesDisplay = document.getElementById('notes-display');
+    const cancelNotesBtn = document.getElementById('cancel-notes');
+    const notesArea = document.getElementById('notes-area')
+
+    notesBtn.addEventListener('click', () => {
+        const noteContent = Projects[proj_id]['note'];
+        notesArea.textContent = noteContent ? noteContent : 'Type your notes here...';
+        notesDisplay.style.display = 'flex';
+    })
+
+    cancelNotesBtn.addEventListener('click', () => {
+        notesDisplay.style.display = 'none';
+    })
+
+    notesArea.addEventListener('change', () => {
+        Projects[proj_id]['note'] = notesArea.value;
+        storeLocal('Projects', Projects);
+    })
     
     // add event listener for notes button ----------
     addTaskBtn.addEventListener('click', () => {

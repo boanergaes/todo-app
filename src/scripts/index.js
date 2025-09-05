@@ -59,11 +59,10 @@ window.addEventListener('resize', () => {
 
 // theme toggle
 
+if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'dark');
 localStorage.getItem('theme') === 'dark' ? body.classList.remove('lightmode') : body.classList.add('lightmode')
 
 themeBtn.addEventListener('click', () => {
-    if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'dark');
-    
     const theme = localStorage.getItem('theme');
 
     if (theme === 'dark') {

@@ -13,9 +13,11 @@ export function invalidInputAnimate(elem) {
     )
 }
 
-export function declareTaskUi(taskElem, checkbox, status) {
+export function declareTaskUi(id, status) {
+    const elem = document.getElementById(`${id}`);
+    const checkbox = document.getElementById(`${id}-checkbox`);
     checkbox.checked = status;
-    taskElem.style.textDecoration = status ? 'line-through' : 'none';
+    elem.style.textDecoration = status ? 'line-through' : 'none';
 }
 
 export function nextProjId() {
