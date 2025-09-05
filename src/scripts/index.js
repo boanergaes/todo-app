@@ -1,6 +1,5 @@
 import '../styles/workspace.css'
 import { initProjectIntake, renderProjects, renderTasks } from './dom';
-import {Task} from './factory'
 import { getCurrProjectId, initStorage, projectsJSON, setCurrProjectId } from './storage';
 import { nextProjId } from './utils';
 

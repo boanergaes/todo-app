@@ -1,4 +1,4 @@
-import { InvertIsProjAddBtnActive, isProjAddBtnActive } from ".";
+import { InvertIsProjAddBtnActive } from ".";
 import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone, addSubTask, deleteSubTask, declareSubTaskDone, storeLocal } from "./storage";
 import { nextProjId, nextTaskId, nextSubTaskId,clearAllChildren, invalidInputAnimate, declareTaskUi } from "./utils";
 import { format } from 'date-fns';

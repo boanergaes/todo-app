@@ -5,7 +5,7 @@ const Dotenv = require("dotenv-webpack"); //for working with .env
 
 module.exports = {
 
-    mode: "development",
+    mode: "production",
 
     entry: {
         bundle: path.resolve(__dirname, "src/scripts/index.js")
