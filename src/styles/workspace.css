@@ -24,6 +24,43 @@
     --aside-width: 350px;
 }
 
+.lightmode {
+    --main-bg-color: hsl(0, 0%, 92%);
+    --lighter-bg-color: hsl(0, 0%, 80%);
+    --lighter-bg-color-hover: hsl(0, 0%, 76%);
+    --main-font-color: black;
+    --main-btn-bg-color: hsl(142, 71%, 40%);
+    --main-btn-bg-color-hover: hsl(142, 71%, 45%);
+    --thin-border-color: hsla(0, 0%, 47%, .5);
+    --medium-border-color: hsla(0, 0%, 87%, .8);
+
+    & #project-list li, #todo-list li {
+        &:hover {
+            background-color: var(--lighter-bg-color);
+
+            & button:hover {
+                background-color: var(--main-bg-color);
+            }
+        }
+    }
+
+    & .aside-footer {
+            background-image: linear-gradient(to top, var(--main-bg-color), hsl(0, 0%, 90%));
+    }
+
+    & #mini-profile-sec {
+            background-image: linear-gradient(to top, var(--main-bg-color), hsl(0, 0%, 90%));
+            box-shadow: 1px 1px 10px hsla(0, 0%, 20%, .22);
+    }
+
+    & #light-icon {
+        display: none;
+    }
+    & #dark-icon {
+        display: flex;
+    }
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -77,8 +114,7 @@ section.upper-wrapper {
     background-position: center;
     background-repeat: no-repeat;
     padding-top: 6rem;
-    
-    
+    color: white;  
 }
 
 /* =========== header ============== */ 
@@ -151,6 +187,10 @@ header {
         /* background-image: linear-gradient(-40deg, hsl(0, 0%, 10%), hsl(60, 75%, 23%)); */
         background-color: var(--main-btn-bg-color-hover);
     }
+}
+
+#theme-btn {
+    color: white;
 }
 
 #light-icon {
@@ -295,6 +335,7 @@ aside {
 .project-content, .todo-content {
     display: flex;
     align-items: center;
+    text-align: start;
     gap: .5rem;
 }
 

@@ -13,6 +13,11 @@ export function invalidInputAnimate(elem) {
     )
 }
 
+export function declareTaskUi(taskElem, checkbox, status) {
+    checkbox.checked = status;
+    taskElem.style.textDecoration = status ? 'line-through' : 'none';
+}
+
 export function nextProjId() {
     // the default projets have ids 1 - 4
     // the new project's ids start at 10 and increases indefinitly even if projects are deleted

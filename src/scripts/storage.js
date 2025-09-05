@@ -105,6 +105,8 @@ export function addTask(proj_id, task_id, description, due_date, priority) {
 export function deleteTask(proj_id, task_id) {
     const deleteTask = document.getElementById(task_id);
     deleteTask.remove();
+    const subTaskList = document.getElementById(`${task_id}-sub-task-list`);
+    if (subTaskList) subTaskList.remove();
  
     let Projects = projectsJSON();
     delete Projects[proj_id]['tasks'][task_id];

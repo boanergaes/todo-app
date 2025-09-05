@@ -6,7 +6,12 @@ import { nextProjId } from './utils';
 
 let isProjAddBtnActive = true;
 
+const body = document.body;
 const addProjectBtn = document.getElementById('add-project');
+const sideBar = document.getElementById('side-bar');
+const sideBarOnBtn = document.getElementById('sidebar-toggle-btn');
+const sideBarOffBtn = document.getElementById('aside-off');
+const themeBtn = document.getElementById('theme-btn');
 
 // bellow are the function definitions
 
@@ -23,8 +28,6 @@ renderProjects(1);
 
 renderTasks();
 
-// console.log(localStorage.getItem('Project'))
-
 addProjectBtn.addEventListener('click', () => {
     if (isProjAddBtnActive) {
         initProjectIntake();
@@ -32,9 +35,9 @@ addProjectBtn.addEventListener('click', () => {
     }
 });
 
-const sideBar = document.getElementById('side-bar');
-const sideBarOnBtn = document.getElementById('sidebar-toggle-btn');
-const sideBarOffBtn = document.getElementById('aside-off');
+// === ui and toggles === //
+
+// toggle sidebar
 
 sideBarOnBtn.addEventListener('click', () => {
     if (sideBar.classList.contains('side-bar-off')) sideBar.classList.remove('side-bar-off');
@@ -54,3 +57,20 @@ window.addEventListener('resize', () => {
     }
 })
 
+// theme toggle
+
+localStorage.getItem('theme') === 'dark' ? body.classList.remove('lightmode') : body.classList.add('lightmode')
+
+themeBtn.addEventListener('click', () => {
+    if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'dark');
+    
+    const theme = localStorage.getItem('theme');
+
+    if (theme === 'dark') {
+        localStorage.setItem('theme', 'light');
+        body.classList.add('lightmode');
+    } else {
+        localStorage.setItem('theme', 'dark');
+        body.classList.remove('lightmode');
+    }
+})
