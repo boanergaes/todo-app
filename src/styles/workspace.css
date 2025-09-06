@@ -745,7 +745,7 @@ aside {
 @media  screen and (width < 740px) {
     main, .hero {
         margin-left: 0;
-        text-align: center;
+        /* text-align: center; */
     }
     aside {
         /* display: none; */
@@ -783,6 +783,11 @@ aside {
         height: calc(100vh - 75px);
         top: 75px;
     }
+
+    main {
+        padding: 1rem .3rem;
+    }
+
     .accessory {
         top: 66px;
     }
@@ -805,6 +810,14 @@ aside {
 
     .project-title {
         font-size: 1.2rem;
+    }
+
+    .sub-task-list {
+        padding-left: 1.8rem;
+    }
+
+    .sub-task-input {
+        margin-left: 1.8rem;
     }
 }
 
