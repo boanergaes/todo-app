@@ -720,6 +720,10 @@ aside {
     #cancel-task-creation-btn, #cancel-task-edit-btn {
         grid-column: 2 / -1;
     }
+
+    .project-title {
+        font-size: 1.2rem;
+    }
 }
 
 @keyframes slide {
@@ -798,6 +802,10 @@ aside {
     #cancel-task-creation-btn, #cancel-task-edit-btn {
         grid-column: 2 / -1;
     }
+
+    .project-title {
+        font-size: 1.2rem;
+    }
 }
 
 @media screen and (width < 460px) {
@@ -817,5 +825,11 @@ aside {
     }
     aside {
         width: 100vw;
+    }
+}
+
+@media screen and (width < 406px) {
+    .project-title {
+        font-size: 1rem;
     }
 }
