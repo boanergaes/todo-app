@@ -1,74 +1,23 @@
-import '../styles/workspace.css'
-import { initProjectIntake, renderProjects, renderTasks } from './dom';
-import { getCurrProjectId, initStorage, projectsJSON, setCurrProjectId } from './api';
-import { nextProjId } from './utils';
+// src/scripts/index.js
+import '../styles/workspace.css';
+import { renderProjects } from './dom.js';
+import { InvertIsProjAddBtnActive } from './dom.js';
+import * as API from './api.js';
 
+const addProjectBtn = document.getElementById('add-project');
 let isProjAddBtnActive = true;
 
-const body = document.body;
-const addProjectBtn = document.getElementById('add-project');
-const sideBar = document.getElementById('side-bar');
-const sideBarOnBtn = document.getElementById('sidebar-toggle-btn');
-const sideBarOffBtn = document.getElementById('aside-off');
-const themeBtn = document.getElementById('theme-btn');
+export function InvertIsProjAddBtnActive() { isProjAddBtnActive = !isProjAddBtnActive; }
 
-// bellow are the function definitions
+addProjectBtn.addEventListener('click', async () => {
+    if (!isProjAddBtnActive) return;
 
-// to make sure the user don't keep touching the add project button before finishing their project adding session.
-export function InvertIsProjAddBtnActive() {
-    isProjAddBtnActive = !isProjAddBtnActive;
-}
+    const title = prompt('Enter project name:');
+    if (!title) return;
 
-// bellow are the Function calls and Event Listeners
-
-initStorage() // this does nothing if localStorage is already initialized
-
-renderProjects(1);
-
-renderTasks();
-
-addProjectBtn.addEventListener('click', () => {
-    if (isProjAddBtnActive) {
-        initProjectIntake();
-        InvertIsProjAddBtnActive();
-    }
+    await API.addProject({ title, note: '' });
+    await renderProjects();
+    InvertIsProjAddBtnActive();
 });
 
-// === ui and toggles === //
-
-// toggle sidebar
-
-sideBarOnBtn.addEventListener('click', () => {
-    if (sideBar.classList.contains('side-bar-off')) sideBar.classList.remove('side-bar-off');
-    sideBar.classList.add('side-bar-on');
-})
-
-sideBarOffBtn.addEventListener('click', () => {
-    if (sideBar.classList.contains('side-bar-on')) sideBar.classList.remove('side-bar-on');
-    sideBar.classList.add('side-bar-off');
-})
-
-// it should have no animation if window size >= 740px
-window.addEventListener('resize', () => {
-    if (window.innerWidth >= 740) {
-        if (sideBar.classList.contains('side-bar-off')) sideBar.classList.remove('side-bar-off');
-        if (sideBar.classList.contains('side-bar-on')) sideBar.classList.remove('side-bar-on');
-    }
-})
-
-// theme toggle (using sessionStorage instead of localStorage)
-
-if (!sessionStorage.getItem('theme')) sessionStorage.setItem('theme', 'dark');
-sessionStorage.getItem('theme') === 'dark' ? body.classList.remove('lightmode') : body.classList.add('lightmode')
-
-themeBtn.addEventListener('click', () => {
-    const theme = sessionStorage.getItem('theme');
-
-    if (theme === 'dark') {
-        sessionStorage.setItem('theme', 'light');
-        body.classList.add('lightmode');
-    } else {
-        sessionStorage.setItem('theme', 'dark');
-        body.classList.remove('lightmode');
-    }
-})
+renderProjects();
