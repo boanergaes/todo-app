@@ -62,16 +62,16 @@ export async function createTaskElement(task) {
     taskElem.innerHTML = `
         <div>
             <input type="checkbox" id="${task.id}-checkbox">
-            <label>${task.description} (${task.dueDate})</label>
+            <label>${task.description} (${task.due_date || 'No Due Date'})</label>
         </div>
         <button class="delete-task-btn">Delete</button>
     `;
     taskList.appendChild(taskElem);
 
     const checkbox = document.getElementById(`${task.id}-checkbox`);
-    checkbox.checked = task.completed;
+    checkbox.checked = task.task_status;
     checkbox.addEventListener('change', async () => {
-        await API.updateTask(task.id, { completed: checkbox.checked });
+        await API.updateTask(task.id, { task_status: checkbox.checked });
         declareTaskUi(task.id, checkbox.checked);
     });
 
