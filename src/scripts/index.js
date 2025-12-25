@@ -1,6 +1,6 @@
 import '../styles/workspace.css'
 import { initProjectIntake, renderProjects, renderTasks } from './dom';
-import { getCurrProjectId, initStorage, projectsJSON, setCurrProjectId } from './storage';
+import { getCurrProjectId, initStorage, projectsJSON, setCurrProjectId } from './api';
 import { nextProjId } from './utils';
 
 let isProjAddBtnActive = true;
@@ -56,19 +56,19 @@ window.addEventListener('resize', () => {
     }
 })
 
-// theme toggle
+// theme toggle (using sessionStorage instead of localStorage)
 
-if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'dark');
-localStorage.getItem('theme') === 'dark' ? body.classList.remove('lightmode') : body.classList.add('lightmode')
+if (!sessionStorage.getItem('theme')) sessionStorage.setItem('theme', 'dark');
+sessionStorage.getItem('theme') === 'dark' ? body.classList.remove('lightmode') : body.classList.add('lightmode')
 
 themeBtn.addEventListener('click', () => {
-    const theme = localStorage.getItem('theme');
+    const theme = sessionStorage.getItem('theme');
 
     if (theme === 'dark') {
-        localStorage.setItem('theme', 'light');
+        sessionStorage.setItem('theme', 'light');
         body.classList.add('lightmode');
     } else {
-        localStorage.setItem('theme', 'dark');
+        sessionStorage.setItem('theme', 'dark');
         body.classList.remove('lightmode');
     }
 })

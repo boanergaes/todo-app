@@ -1,5 +1,5 @@
 import { InvertIsProjAddBtnActive } from ".";
-import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone, addSubTask, deleteSubTask, declareSubTaskDone, storeLocal } from "./storage";
+import { getProjects, getTasks, getSubtasks, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone, addSubTask, deleteSubTask, declareSubTaskDone } from "./api";
 import { nextProjId, nextTaskId, nextSubTaskId,clearAllChildren, invalidInputAnimate, declareTaskUi, formatDate } from "./utils";
 
 let projectList = document.getElementById('project-list');

@@ -1,0 +1,26 @@
+{
+  "projects": [
+    {
+      "id": "p_1",
+      "title": "Every day tasks",
+      "note": "These are tasks I must do daily!"
+    },
+    {
+      "id": "p_2",
+      "title": "Work stuff",
+      "note": "These are my tasks that are work related."
+    },
+    {
+      "id": "p_3",
+      "title": "Education",
+      "note": "My educational tasks like homework, studies, and exams."
+    },
+    {
+      "id": "p_4",
+      "title": "Bucket List",
+      "note": "I want to experience these things before my day comes!"
+    }
+  ],
+  "tasks": [],
+  "subtasks": []
+}
