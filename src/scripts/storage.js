@@ -1,257 +1,204 @@
-// storage.js
-const API_URL = 'http://localhost:3000';
+import { renderProjects, renderTasks } from "./dom";
+import { declareTaskUi } from "./utils";
 
-// initStorage: nothing destructive here — JSON Server already serves db.json
-export async function initStorage() {
-  // no-op for JSON Server; kept for compatibility
-  return;
+let localProjects = localStorage.getItem('Projects');
+
+let defaultProjects = {
+    p_1: {
+        title: 'Every day tasks',
+        note: 'These are tasks I must do daily!',
+        tasks: {},
+    },
+    
+    p_2: {
+        title: 'Work stuff',
+        note: 'These are my tasks that are Work related.',
+        tasks: {},
+    },
+    
+    p_3: {
+        title: 'Education',
+        note: 'My Educational tasks like home works, studies, and exams.',
+        tasks: {},
+    },
+    
+    p_4: {
+        title: 'Bucket List',
+        note: 'I want to experience these things before my day comes!',
+        tasks: {},
+    },
 }
 
-/* ---------- Simple fetch wrappers ---------- */
-export async function getProjectsList() {
-  const res = await fetch(`${API_URL}/projects`);
-  return await res.json();
-}
-export async function getTasksList() {
-  const res = await fetch(`${API_URL}/tasks`);
-  return await res.json();
-}
-export async function getSubtasksList() {
-  const res = await fetch(`${API_URL}/subtasks`);
-  return await res.json();
+export function projectsJSON() {
+    return JSON.parse(localStorage.getItem('Projects'))
 }
 
-/* ---------- API CRUD helpers ---------- */
-export async function addProjectToServer(projectObj) {
-  const res = await fetch(`${API_URL}/projects`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(projectObj)
-  });
-  return await res.json();
+export function storeLocal(key, toBestored) {
+    localStorage.setItem(key, JSON.stringify(toBestored))
 }
 
-export async function updateProjectOnServer(id, data) {
-  const res = await fetch(`${API_URL}/projects/${id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return await res.json();
-}
-
-export async function deleteProjectFromServer(id) {
-  await fetch(`${API_URL}/projects/${id}`, { method: 'DELETE' });
-}
-
-export async function addTaskToServer(taskObj) {
-  const res = await fetch(`${API_URL}/tasks`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(taskObj)
-  });
-  return await res.json();
-}
-
-export async function updateTaskOnServer(id, data) {
-  const res = await fetch(`${API_URL}/tasks/${id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return await res.json();
-}
-
-export async function deleteTaskFromServer(id) {
-  await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
-}
-
-export async function addSubtaskToServer(subtaskObj) {
-  const res = await fetch(`${API_URL}/subtasks`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(subtaskObj)
-  });
-  return await res.json();
-}
-
-export async function updateSubtaskOnServer(id, data) {
-  const res = await fetch(`${API_URL}/subtasks/${id}`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  });
-  return await res.json();
-}
-
-export async function deleteSubtaskFromServer(id) {
-  await fetch(`${API_URL}/subtasks/${id}`, { method: 'DELETE' });
-}
-
-/* ---------- Compatibility layer: functions used by dom.js (old names) ----------
-
-// The original app expected a single nested Projects object `projectsJSON()`
-// with shape: Projects[proj_id] = { title, note, tasks: { task_id: { ... , sub_tasks: {...} } } }
-// We'll assemble that from the three endpoints so dom.js can keep the same logic.
-*/
-
-export async function projectsJSON() {
-  const [projects, tasks, subtasks] = await Promise.all([
-    getProjectsList(),
-    getTasksList(),
-    getSubtasksList()
-  ]);
-
-  const Projects = {};
-
-  // create project shells
-  for (const p of projects) {
-    Projects[p.id] = {
-      title: p.title ?? '',
-      note: p.note ?? '',
-      tasks: {}
-    };
-  }
-
-  // attach tasks under their project
-  for (const t of tasks) {
-    const projId = t.project_id;
-    if (!Projects[projId]) {
-      // if project missing create a placeholder
-      Projects[projId] = { title: 'Untitled', note: '', tasks: {} };
-    }
-    Projects[projId].tasks[t.id] = {
-      description: t.description,
-      due_date: t.due_date,
-      priority: t.priority,
-      task_status: !!t.task_status,
-      sub_tasks: {}
-    };
-  }
-
-  // attach subtasks under their task
-  for (const s of subtasks) {
-    const taskId = s.task_id;
-    // find containing project+task
-    for (const projId in Projects) {
-      if (Projects[projId].tasks[taskId]) {
-        Projects[projId].tasks[taskId].sub_tasks[s.id] = {
-          description: s.description,
-          sub_task_status: !!s.sub_task_status
-        };
-        break;
-      }
-    }
-  }
-
-  return Projects;
-}
-
-/* ---------- session helpers (same names used in original code) ---------- */
+// the following two functions are for setting and getting which project is open on the main page view
 export function getCurrProjectId() {
-  return sessionStorage.getItem('currProject') ?? null;
+    let currProjectId = sessionStorage.getItem('currProject');
+    return currProjectId;
 }
+
 export function setCurrProjectId(id) {
-  sessionStorage.setItem('currProject', id);
+    sessionStorage.setItem('currProject', id);
 }
 
-/* ---------- High-level operations (match old API) ---------- */
-
-export async function initStorageIfEmpty(initialData = null) {
-  // kept for compatibility. Do nothing by default.
-  return;
-}
-
-export async function addProject(proj_id, proj_title) {
-  // Add to server with given id (JSON Server accepts provided id)
-  const payload = { id: proj_id, title: proj_title, note: '' };
-  return await addProjectToServer(payload);
-}
-
-export async function deleteProject(proj_id) {
-  // Delete all tasks & subtasks belonging to this project, then delete project
-  // Get all tasks for this project
-  const tasksRes = await fetch(`${API_URL}/tasks?project_id=${proj_id}`);
-  const tasks = await tasksRes.json();
-
-  for (const t of tasks) {
-    // delete subtasks of this task
-    const subsRes = await fetch(`${API_URL}/subtasks?task_id=${t.id}`);
-    const subs = await subsRes.json();
-    for (const s of subs) {
-      await deleteSubtaskFromServer(s.id);
+export function initStorage() {
+    if (!localProjects) {
+        const stringLocalProjects = JSON.stringify(defaultProjects);
+        localStorage.setItem('Projects', stringLocalProjects);
     }
-    // delete the task
-    await deleteTaskFromServer(t.id);
-  }
-  // finally delete project
-  await deleteProjectFromServer(proj_id);
 }
 
-export async function addTask(proj_id, task_id, description, due_date, priority) {
-  const payload = {
-    id: task_id,
-    project_id: proj_id,
-    description,
-    due_date,
-    priority,
-    task_status: false
-  };
-  return await addTaskToServer(payload);
-}
+export function addProject(proj_id, title) {
+    let Projects = projectsJSON();
 
-export async function deleteTask(proj_id, task_id) {
-  // delete subtasks of this task
-  const subsRes = await fetch(`${API_URL}/subtasks?task_id=${task_id}`);
-  const subs = await subsRes.json();
-  for (const s of subs) {
-    await deleteSubtaskFromServer(s.id);
-  }
-  await deleteTaskFromServer(task_id);
-}
-
-export async function editTask(proj_id, task_id, new_description, new_due_date, new_priority) {
-  const payload = {
-    description: new_description,
-    due_date: new_due_date,
-    priority: new_priority
-  };
-  return await updateTaskOnServer(task_id, payload);
-}
-
-export async function declareTaskDone(proj_id, task_id, status) {
-  return await updateTaskOnServer(task_id, { task_status: !!status });
-}
-
-export async function addSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
-  const payload = {
-    id: sub_task_id,
-    task_id,
-    description: sub_task_desc,
-    sub_task_status: false
-  };
-  return await addSubtaskToServer(payload);
-}
-
-export async function deleteSubTask(proj_id, task_id, sub_task_id) {
-  return await deleteSubtaskFromServer(sub_task_id);
-}
-
-export async function declareSubTaskDone(proj_id, task_id, sub_task_id, status) {
-  return await updateSubtaskOnServer(sub_task_id, { sub_task_status: !!status });
-}
-
-/* ---------- small helper used in dom.js to persist project title/notes updates ---------- */
-export async function storeLocal(key, ProjectsObj) {
-  // The old code used storeLocal('Projects', Projects). We'll update each project's title/note on the server.
-  if (key !== 'Projects') return;
-  for (const pid in ProjectsObj) {
-    const project = ProjectsObj[pid];
-    try {
-      await updateProjectOnServer(pid, { title: project.title, note: project.note });
-    } catch (err) {
-      // ignore per-field errors
-      console.error('storeLocal update error', pid, err);
+    if (!Projects[proj_id]) {
+        Projects[proj_id] = {
+            title: title,
+            note: '',
+            tasks: {}
+        }
+    
+        storeLocal('Projects', Projects);
     }
-  }
+}
+
+export function deleteProject(proj_id) {
+    // remove the element from DOM
+    const Projects = projectsJSON();
+    const validTaskIds = JSON.parse(localStorage.getItem('validTaskIds'));
+    const deletedProj = document.getElementById(proj_id);
+
+    deletedProj.remove();
+
+    // remove it from local storage
+    delete Projects[proj_id];
+    storeLocal('Projects', Projects);
+
+    // remove its task id tracker 
+    delete validTaskIds[proj_id];
+    storeLocal('validTaskIds', validTaskIds);
+
+    // incase all projects are deleted -- will figure it out later
+    // if (Object.keys(Projects).length == 0) renderProjects(0);
+}
+
+export function addTask(proj_id, task_id, description, due_date, priority) {
+    let Projects = projectsJSON();
+
+    if (!Projects[proj_id]['tasks'][task_id]) {
+        const newTask = {
+            description: description,
+            due_date: due_date,
+            priority: priority,
+            task_status: false,
+            sub_tasks:{}
+        }
+        Projects[proj_id]['tasks'][task_id] = newTask;
+        storeLocal('Projects', Projects);
+    }
+}
+
+export function deleteTask(proj_id, task_id) {
+    const Projects = projectsJSON();
+    const validSubTaskIds = JSON.parse(localStorage.getItem('validSubTaskIds'));
+    const deleteTask = document.getElementById(task_id);
+    const subTaskList = document.getElementById(`${task_id}-sub-task-list`);
+
+    deleteTask.remove();
+    if (subTaskList) subTaskList.remove();
+ 
+    delete Projects[proj_id]['tasks'][task_id];
+    storeLocal('Projects', Projects);
+
+    // delete it's subtask tracker
+    delete validSubTaskIds[task_id];
+    storeLocal('validSubTaskIds', validSubTaskIds);
+}
+
+export function editTask(proj_id, task_id, new_description, new_due_date, new_priority) {
+    const Projects = projectsJSON();
+    const task = Projects[proj_id]['tasks'][task_id];
+
+    const final_description = new_description ? new_description : task['description'];
+    const final_due_date = new_due_date ? new_due_date : task['due_date'];
+    const final_priority = new_priority ? new_priority : task['priority'];
+
+    Projects[proj_id]['tasks'][task_id]['description'] = final_description;
+    Projects[proj_id]['tasks'][task_id]['due_date'] = final_due_date;
+    Projects[proj_id]['tasks'][task_id]['priority'] = final_priority;
+
+    storeLocal('Projects', Projects);
+}
+
+export function declareTaskDone(proj_id, task_id, task_done) {
+    // update storage
+    const Projects = projectsJSON();
+    Projects[proj_id]['tasks'][task_id]['task_status'] = task_done;
+    storeLocal('Projects', Projects)
+
+    //update ui
+    declareTaskUi(task_id, task_done);
+
+    // declare all subtasks done if task done
+    if (task_done) {
+        const subTasks = Projects[proj_id]['tasks'][task_id]['sub_tasks'];
+        for (const st in subTasks) {
+            declareSubTaskDone(proj_id, task_id, st, task_done, true);
+        }
+    }
+}
+
+export function addSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
+    const Projects = projectsJSON();
+
+    if (!Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id]) {
+        const newSubTask = {
+            description: sub_task_desc,
+            sub_task_status: false
+        }
+        Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id] = newSubTask;
+        storeLocal('Projects', Projects);
+    }
+}
+
+export function deleteSubTask(proj_id, task_id, sub_task_id) {
+    const Projects = projectsJSON();
+
+    const deleteSubTask = document.getElementById(sub_task_id);
+    deleteSubTask.remove();
+
+    delete Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id];
+    storeLocal('Projects', Projects);
+}
+
+export function declareSubTaskDone(proj_id, task_id, sub_task_id, sub_task_done, passTaskDeclare) {
+    const Projects = projectsJSON();
+    Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id]['sub_task_status'] = sub_task_done;
+    storeLocal('Projects', Projects);
+   
+    declareTaskUi(sub_task_id, sub_task_done);
+
+    // to prevent stack overflow if called by declareTaskDone()
+    if (!passTaskDeclare) {
+        if (allSubTasksDone(proj_id, task_id)) {
+            declareTaskDone(proj_id, task_id, true); 
+        } else {
+            declareTaskDone(proj_id, task_id, false);
+        }
+    }
+}
+
+function allSubTasksDone(proj_id, task_id) {
+    const Projects = projectsJSON();
+    const subTasks = Projects[proj_id]['tasks'][task_id]['sub_tasks'];
+    for (const st in subTasks) {
+        if (!subTasks[st]['sub_task_status']) return false;
+    }
+    return true;
 }
