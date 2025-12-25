@@ -1,7 +1,7 @@
 import { renderProjects, renderTasks } from "./dom";
 import { declareTaskUi } from "./utils";
 
-let localProjects = localStorage.getItem('Projects');
+const baseURL = 'http://localhost:3000';
 
 let defaultProjects = {
     p_1: {
@@ -9,19 +9,19 @@ let defaultProjects = {
         note: 'These are tasks I must do daily!',
         tasks: {},
     },
-    
+
     p_2: {
         title: 'Work stuff',
         note: 'These are my tasks that are Work related.',
         tasks: {},
     },
-    
+
     p_3: {
         title: 'Education',
         note: 'My Educational tasks like home works, studies, and exams.',
         tasks: {},
     },
-    
+
     p_4: {
         title: 'Bucket List',
         note: 'I want to experience these things before my day comes!',
@@ -29,12 +29,40 @@ let defaultProjects = {
     },
 }
 
+let data = {
+    projects: defaultProjects,
+    validTaskIds: {},
+    validSubTaskIds: {}
+};
+
+export function initStorage() {
+    // Load data from server
+    fetch(`${baseURL}/projects`).then(res => res.json()).then(projects => {
+        data.projects = projects;
+    }).catch(() => {
+        // If server not ready, use default
+    });
+
+    fetch(`${baseURL}/validTaskIds`).then(res => res.json()).then(validTaskIds => {
+        data.validTaskIds = validTaskIds;
+    }).catch(() => {});
+
+    fetch(`${baseURL}/validSubTaskIds`).then(res => res.json()).then(validSubTaskIds => {
+        data.validSubTaskIds = validSubTaskIds;
+    }).catch(() => {});
+}
+
 export function projectsJSON() {
-    return JSON.parse(localStorage.getItem('Projects'))
+    return data.projects;
 }
 
 export function storeLocal(key, toBestored) {
-    localStorage.setItem(key, JSON.stringify(toBestored))
+    data[key] = toBestored;
+    fetch(`${baseURL}/${key}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(toBestored)
+    }).catch(err => console.error('Failed to save to server', err));
 }
 
 // the following two functions are for setting and getting which project is open on the main page view
@@ -47,13 +75,6 @@ export function setCurrProjectId(id) {
     sessionStorage.setItem('currProject', id);
 }
 
-export function initStorage() {
-    if (!localProjects) {
-        const stringLocalProjects = JSON.stringify(defaultProjects);
-        localStorage.setItem('Projects', stringLocalProjects);
-    }
-}
-
 export function addProject(proj_id, title) {
     let Projects = projectsJSON();
 
@@ -63,24 +84,24 @@ export function addProject(proj_id, title) {
             note: '',
             tasks: {}
         }
-    
-        storeLocal('Projects', Projects);
+
+        storeLocal('projects', Projects);
     }
 }
 
 export function deleteProject(proj_id) {
     // remove the element from DOM
     const Projects = projectsJSON();
-    const validTaskIds = JSON.parse(localStorage.getItem('validTaskIds'));
+    const validTaskIds = data.validTaskIds;
     const deletedProj = document.getElementById(proj_id);
 
     deletedProj.remove();
 
-    // remove it from local storage
+    // remove it from storage
     delete Projects[proj_id];
-    storeLocal('Projects', Projects);
+    storeLocal('projects', Projects);
 
-    // remove its task id tracker 
+    // remove its task id tracker
     delete validTaskIds[proj_id];
     storeLocal('validTaskIds', validTaskIds);
 
@@ -100,21 +121,21 @@ export function addTask(proj_id, task_id, description, due_date, priority) {
             sub_tasks:{}
         }
         Projects[proj_id]['tasks'][task_id] = newTask;
-        storeLocal('Projects', Projects);
+        storeLocal('projects', Projects);
     }
 }
 
 export function deleteTask(proj_id, task_id) {
     const Projects = projectsJSON();
-    const validSubTaskIds = JSON.parse(localStorage.getItem('validSubTaskIds'));
+    const validSubTaskIds = data.validSubTaskIds;
     const deleteTask = document.getElementById(task_id);
     const subTaskList = document.getElementById(`${task_id}-sub-task-list`);
 
     deleteTask.remove();
     if (subTaskList) subTaskList.remove();
- 
+
     delete Projects[proj_id]['tasks'][task_id];
-    storeLocal('Projects', Projects);
+    storeLocal('projects', Projects);
 
     // delete it's subtask tracker
     delete validSubTaskIds[task_id];
@@ -133,14 +154,14 @@ export function editTask(proj_id, task_id, new_description, new_due_date, new_pr
     Projects[proj_id]['tasks'][task_id]['due_date'] = final_due_date;
     Projects[proj_id]['tasks'][task_id]['priority'] = final_priority;
 
-    storeLocal('Projects', Projects);
+    storeLocal('projects', Projects);
 }
 
 export function declareTaskDone(proj_id, task_id, task_done) {
     // update storage
     const Projects = projectsJSON();
     Projects[proj_id]['tasks'][task_id]['task_status'] = task_done;
-    storeLocal('Projects', Projects)
+    storeLocal('projects', Projects)
 
     //update ui
     declareTaskUi(task_id, task_done);
@@ -163,7 +184,7 @@ export function addSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
             sub_task_status: false
         }
         Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id] = newSubTask;
-        storeLocal('Projects', Projects);
+        storeLocal('projects', Projects);
     }
 }
 
@@ -174,20 +195,20 @@ export function deleteSubTask(proj_id, task_id, sub_task_id) {
     deleteSubTask.remove();
 
     delete Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id];
-    storeLocal('Projects', Projects);
+    storeLocal('projects', Projects);
 }
 
 export function declareSubTaskDone(proj_id, task_id, sub_task_id, sub_task_done, passTaskDeclare) {
     const Projects = projectsJSON();
     Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id]['sub_task_status'] = sub_task_done;
-    storeLocal('Projects', Projects);
-   
+    storeLocal('projects', Projects);
+
     declareTaskUi(sub_task_id, sub_task_done);
 
     // to prevent stack overflow if called by declareTaskDone()
     if (!passTaskDeclare) {
         if (allSubTasksDone(proj_id, task_id)) {
-            declareTaskDone(proj_id, task_id, true); 
+            declareTaskDone(proj_id, task_id, true);
         } else {
             declareTaskDone(proj_id, task_id, false);
         }

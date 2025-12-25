@@ -1,21 +1,42 @@
 {
-  "projects": [
-    {
-      "id": "4891",
-      "title": "efrata melese",
-      "note": ""
+  "projects": {
+    "p_1": {
+      "title": "Every day tasks",
+      "note": "These are tasks I must do daily!",
+      "tasks": {
+        "p_1-t_2": {
+          "description": "kill him",
+          "due_date": "No Due Date",
+          "priority": "Eventually",
+          "task_status": false,
+          "sub_tasks": {}
+        }
+      }
     },
-    {
-      "id": "4891",
-      "title": "efrata melese",
-      "note": ""
+    "p_2": {
+      "title": "Work stuff",
+      "note": "These are my tasks that are Work related.",
+      "tasks": {}
     },
-    {
-      "id": "4891",
-      "title": "efrata melese",
-      "note": ""
+    "p_3": {
+      "title": "Education",
+      "note": "My Educational tasks like home works, studies, and exams.",
+      "tasks": {}
+    },
+    "p_4": {
+      "title": "Bucket List",
+      "note": "I want to experience these things before my day comes!",
+      "tasks": {}
+    },
+    "p_11": {
+      "title": "abebe",
+      "note": "",
+      "tasks": {}
     }
-  ],
-  "tasks": [],
-  "subtasks": []
+  },
+  "validTaskIds": {
+    "p_2": 2,
+    "p_1": 3
+  },
+  "validSubTaskIds": {}
 }
