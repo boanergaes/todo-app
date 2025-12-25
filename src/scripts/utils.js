@@ -1,5 +1,5 @@
 
-import { storeLocal } from "./storage";
+import { storeLocal, getValidTaskIds, getValidSubTaskIds, getValidProjId } from "./storage";
 import { format } from 'date-fns';
 
 export function invalidInputAnimate(elem) {
@@ -35,33 +35,32 @@ export function nextProjId() {
     // there is no id reusing
     // project ids have 'p_1' format
 
-    const validProjId = localStorage.getItem('validProjId');
+    const validProjId = getValidProjId();
     if (!validProjId) {
-        localStorage.setItem('validProjId', '11');
+        storeLocal('validProjId', '11');
         return 'p_10';
     }
     const int = parseInt(validProjId);
-    localStorage.setItem('validProjId', int + 1);
-    return 'p_' + (int);
+    storeLocal('validProjId', (int + 1).toString());
+    return 'p_' + int;
 }
 
 export function nextTaskId(proj_id) {
     // task ids have 'p_1-t_2' format where p_1 is project id and t_2 is the task id
     //valid task ids are tracked by incrementing them for each project separately
 
-    const validTaskIds = localStorage.getItem('validTaskIds');
+    const validTaskIds = getValidTaskIds();
 
-    if (!validTaskIds) {
+    if (!validTaskIds || Object.keys(validTaskIds).length === 0) {
         const idmap = {
             // return 1 and store 2
             [`${proj_id}`]: 2
         }
-        // localStorage.setItem('validTaskIds', JSON.stringify(idmap));
         storeLocal('validTaskIds', idmap);
         return proj_id + '-t_' + 1;
     }
 
-    let parsedTaskIds = JSON.parse(validTaskIds);
+    let parsedTaskIds = validTaskIds;
 
     if (!parsedTaskIds[proj_id]) {
         // return 1 and store 2
@@ -80,9 +79,9 @@ export function nextSubTaskId(task_id) {
     // sub-task ids have 'p_1-t_2-st_3' format where p_1 is project id and t_2 is the task id and st_3 is the sub-task id
     //valid sub-task ids are tracked by incrementing them for each task separately
 
-    const validSubTaskIds = localStorage.getItem('validSubTaskIds');
+    const validSubTaskIds = getValidSubTaskIds();
 
-    if (!validSubTaskIds) {
+    if (!validSubTaskIds || Object.keys(validSubTaskIds).length === 0) {
         const idmap = {
             // return 1 and store 2
             [`${task_id}`]: 2
@@ -91,7 +90,7 @@ export function nextSubTaskId(task_id) {
         return task_id + '-st_' + 1;
     }
 
-    let parsedSubTaskIds = JSON.parse(validSubTaskIds);
+    let parsedSubTaskIds = validSubTaskIds;
 
     if (!parsedSubTaskIds[task_id]) {
         // return 1 and store 2

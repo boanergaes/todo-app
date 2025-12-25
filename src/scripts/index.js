@@ -21,11 +21,13 @@ export function InvertIsProjAddBtnActive() {
 
 // bellow are the Function calls and Event Listeners
 
-initStorage() // this does nothing if localStorage is already initialized
+(async function startApp() {
+    await initStorage(); // ensure storage is initialized before rendering
 
-renderProjects(1);
+    renderProjects(1);
 
-renderTasks();
+    renderTasks();
+})();
 
 addProjectBtn.addEventListener('click', () => {
     if (isProjAddBtnActive) {

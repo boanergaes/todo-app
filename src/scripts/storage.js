@@ -30,39 +30,59 @@ let defaultProjects = {
 }
 
 let data = {
-    projects: defaultProjects,
+    projects: {},
     validTaskIds: {},
-    validSubTaskIds: {}
+    validSubTaskIds: {},
+    validProjId: '11'
 };
 
-export function initStorage() {
-    // Load data from server
-    fetch(`${baseURL}/projects`).then(res => res.json()).then(projects => {
-        data.projects = projects;
-    }).catch(() => {
-        // If server not ready, use default
-    });
+let projects = defaultProjects;
 
-    fetch(`${baseURL}/validTaskIds`).then(res => res.json()).then(validTaskIds => {
-        data.validTaskIds = validTaskIds;
-    }).catch(() => {});
+export async function saveData() {
+    try {
+        await fetch(`${baseURL}/data`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    } catch (err) {
+        console.error('Failed to save data', err);
+        throw err;
+    }
+}
 
-    fetch(`${baseURL}/validSubTaskIds`).then(res => res.json()).then(validSubTaskIds => {
-        data.validSubTaskIds = validSubTaskIds;
-    }).catch(() => {});
+export async function initStorage() {
+    try {
+        const res = await fetch(`${baseURL}/data`);
+        const d = await res.json();
+        data = d;
+        projects = data.projects.reduce((acc, p) => {
+            acc[p.id] = p;
+            return acc;
+        }, {});
+    } catch (err) {
+        data = {
+            projects: Object.values(defaultProjects),
+            validTaskIds: {},
+            validSubTaskIds: {},
+            validProjId: '11'
+        };
+        projects = defaultProjects;
+    }
 }
 
 export function projectsJSON() {
-    return data.projects;
+    return projects;
 }
 
-export function storeLocal(key, toBestored) {
+export async function storeLocal(key, toBestored) {
     data[key] = toBestored;
-    fetch(`${baseURL}/${key}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(toBestored)
-    }).catch(err => console.error('Failed to save to server', err));
+    try {
+        await saveData();
+    } catch (err) {
+        console.error('Failed to save to server', err);
+        throw err;
+    }
 }
 
 // the following two functions are for setting and getting which project is open on the main page view
@@ -75,21 +95,45 @@ export function setCurrProjectId(id) {
     sessionStorage.setItem('currProject', id);
 }
 
-export function addProject(proj_id, title) {
+export function getValidTaskIds() {
+    return data.validTaskIds;
+}
+
+export function getValidSubTaskIds() {
+    return data.validSubTaskIds;
+}
+
+export function getValidProjId() {
+    return data.validProjId;
+}
+
+export const getProjects = projectsJSON;
+
+export { data };
+
+export async function addProject(proj_id, title) {
     let Projects = projectsJSON();
 
     if (!Projects[proj_id]) {
-        Projects[proj_id] = {
+        const newProject = {
+            id: proj_id,
             title: title,
             note: '',
             tasks: {}
-        }
-
-        storeLocal('projects', Projects);
+        };
+        Projects[proj_id] = newProject;
+                // update in-memory data and persist whole `data` to server
+                data.projects = Object.values(Projects);
+                try {
+                    await saveData();
+                } catch (err) {
+                    console.error('Failed to add project', err);
+                    throw err;
+                }
     }
 }
 
-export function deleteProject(proj_id) {
+export async function deleteProject(proj_id) {
     // remove the element from DOM
     const Projects = projectsJSON();
     const validTaskIds = data.validTaskIds;
@@ -99,17 +143,24 @@ export function deleteProject(proj_id) {
 
     // remove it from storage
     delete Projects[proj_id];
-    storeLocal('projects', Projects);
+        // update in-memory data and persist
+        data.projects = Object.values(Projects);
+        try {
+            await saveData();
+        } catch (err) {
+            console.error('Failed to delete project', err);
+            throw err;
+        }
 
     // remove its task id tracker
     delete validTaskIds[proj_id];
-    storeLocal('validTaskIds', validTaskIds);
+    await storeLocal('validTaskIds', validTaskIds);
 
     // incase all projects are deleted -- will figure it out later
     // if (Object.keys(Projects).length == 0) renderProjects(0);
 }
 
-export function addTask(proj_id, task_id, description, due_date, priority) {
+export async function addTask(proj_id, task_id, description, due_date, priority) {
     let Projects = projectsJSON();
 
     if (!Projects[proj_id]['tasks'][task_id]) {
@@ -121,11 +172,18 @@ export function addTask(proj_id, task_id, description, due_date, priority) {
             sub_tasks:{}
         }
         Projects[proj_id]['tasks'][task_id] = newTask;
-        storeLocal('projects', Projects);
+                // persist full data object
+                data.projects = Object.values(Projects);
+                try {
+                    await saveData();
+                } catch (err) {
+                    console.error('Failed to add task', err);
+                    throw err;
+                }
     }
 }
 
-export function deleteTask(proj_id, task_id) {
+export async function deleteTask(proj_id, task_id) {
     const Projects = projectsJSON();
     const validSubTaskIds = data.validSubTaskIds;
     const deleteTask = document.getElementById(task_id);
@@ -135,14 +193,21 @@ export function deleteTask(proj_id, task_id) {
     if (subTaskList) subTaskList.remove();
 
     delete Projects[proj_id]['tasks'][task_id];
-    storeLocal('projects', Projects);
+        // persist full data object
+        data.projects = Object.values(Projects);
+        try {
+            await saveData();
+        } catch (err) {
+            console.error('Failed to delete task', err);
+            throw err;
+        }
 
     // delete it's subtask tracker
     delete validSubTaskIds[task_id];
-    storeLocal('validSubTaskIds', validSubTaskIds);
+    await storeLocal('validSubTaskIds', validSubTaskIds);
 }
 
-export function editTask(proj_id, task_id, new_description, new_due_date, new_priority) {
+export async function editTask(proj_id, task_id, new_description, new_due_date, new_priority) {
     const Projects = projectsJSON();
     const task = Projects[proj_id]['tasks'][task_id];
 
@@ -154,14 +219,28 @@ export function editTask(proj_id, task_id, new_description, new_due_date, new_pr
     Projects[proj_id]['tasks'][task_id]['due_date'] = final_due_date;
     Projects[proj_id]['tasks'][task_id]['priority'] = final_priority;
 
-    storeLocal('projects', Projects);
+        // persist full data object
+        data.projects = Object.values(Projects);
+        try {
+            await saveData();
+        } catch (err) {
+            console.error('Failed to edit task', err);
+            throw err;
+        }
 }
 
-export function declareTaskDone(proj_id, task_id, task_done) {
+export async function declareTaskDone(proj_id, task_id, task_done) {
     // update storage
     const Projects = projectsJSON();
     Projects[proj_id]['tasks'][task_id]['task_status'] = task_done;
-    storeLocal('projects', Projects)
+        // persist full data object
+        data.projects = Object.values(Projects);
+        try {
+            await saveData();
+        } catch (err) {
+            console.error('Failed to update task status', err);
+            throw err;
+        }
 
     //update ui
     declareTaskUi(task_id, task_done);
@@ -170,12 +249,12 @@ export function declareTaskDone(proj_id, task_id, task_done) {
     if (task_done) {
         const subTasks = Projects[proj_id]['tasks'][task_id]['sub_tasks'];
         for (const st in subTasks) {
-            declareSubTaskDone(proj_id, task_id, st, task_done, true);
+            await declareSubTaskDone(proj_id, task_id, st, task_done, true);
         }
     }
 }
 
-export function addSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
+export async function addSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
     const Projects = projectsJSON();
 
     if (!Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id]) {
@@ -184,24 +263,45 @@ export function addSubTask(proj_id, task_id, sub_task_id, sub_task_desc) {
             sub_task_status: false
         }
         Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id] = newSubTask;
-        storeLocal('projects', Projects);
+                // persist full data object
+                data.projects = Object.values(Projects);
+                try {
+                    await saveData();
+                } catch (err) {
+                    console.error('Failed to add subtask', err);
+                    throw err;
+                }
     }
 }
 
-export function deleteSubTask(proj_id, task_id, sub_task_id) {
+export async function deleteSubTask(proj_id, task_id, sub_task_id) {
     const Projects = projectsJSON();
 
     const deleteSubTask = document.getElementById(sub_task_id);
     deleteSubTask.remove();
 
     delete Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id];
-    storeLocal('projects', Projects);
+        // persist full data object
+        data.projects = Object.values(Projects);
+        try {
+            await saveData();
+        } catch (err) {
+            console.error('Failed to delete subtask', err);
+            throw err;
+        }
 }
 
-export function declareSubTaskDone(proj_id, task_id, sub_task_id, sub_task_done, passTaskDeclare) {
+export async function declareSubTaskDone(proj_id, task_id, sub_task_id, sub_task_done, passTaskDeclare) {
     const Projects = projectsJSON();
     Projects[proj_id]['tasks'][task_id]['sub_tasks'][sub_task_id]['sub_task_status'] = sub_task_done;
-    storeLocal('projects', Projects);
+        // persist full data object
+        data.projects = Object.values(Projects);
+        try {
+            await saveData();
+        } catch (err) {
+            console.error('Failed to update subtask status', err);
+            throw err;
+        }
 
     declareTaskUi(sub_task_id, sub_task_done);
 

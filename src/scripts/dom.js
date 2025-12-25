@@ -1,6 +1,6 @@
 
 import { InvertIsProjAddBtnActive } from ".";
-import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone, addSubTask, deleteSubTask, declareSubTaskDone, storeLocal } from "./storage";
+import { projectsJSON, addProject, deleteProject, setCurrProjectId, getCurrProjectId, addTask, deleteTask, editTask, declareTaskDone, addSubTask, deleteSubTask, declareSubTaskDone, storeLocal, saveData } from "./storage";
 import { nextProjId, nextTaskId, nextSubTaskId,clearAllChildren, invalidInputAnimate, declareTaskUi, formatDate } from "./utils";
 
 let projectList = document.getElementById('project-list');
@@ -507,7 +507,8 @@ export function renderTasks() {
     
     titleInput.addEventListener('change', () => {
         Projects[proj_id]['title'] = titleInput.value;
-        storeLocal('Projects', Projects);
+        data.projects = Object.values(Projects);
+        saveData();
 
         const projLi = document.getElementById(`${proj_id}-title-para`)
         projLi.textContent = titleInput.value;
@@ -526,7 +527,8 @@ export function renderTasks() {
 
     notesArea.addEventListener('change', () => {
         Projects[proj_id]['note'] = notesArea.value;
-        storeLocal('Projects', Projects);
+        data.projects = Object.values(Projects);
+        saveData();
     })
     
     // add event listener for notes button ----------
