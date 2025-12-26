@@ -1,76 +1,46 @@
-import '../styles/workspace.css'
-import { initProjectIntake, renderProjects, renderTasks } from './dom';
-import { getCurrProjectId, initStorage, projectsJSON, setCurrProjectId } from './storage';
-import { nextProjId } from './utils';
+// src/scripts/index.js
+import '../styles/workspace.css';
+import { initApp } from "./dom.js";
 
-let isProjAddBtnActive = true;
+window.addEventListener("DOMContentLoaded", () => {
+  // Initialize the core app logic (rendering projects/tasks)
+  initApp();
 
-const body = document.body;
-const addProjectBtn = document.getElementById('add-project');
-const sideBar = document.getElementById('side-bar');
-const sideBarOnBtn = document.getElementById('sidebar-toggle-btn');
-const sideBarOffBtn = document.getElementById('aside-off');
-const themeBtn = document.getElementById('theme-btn');
+  // --- Theme Toggle Logic ---
+  const themeBtn = document.getElementById('theme-btn');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      // Toggle the lightmode class on the body
+      document.body.classList.toggle('lightmode');
+      
+      // Optional: Store preference in localStorage
+      const isLight = document.body.classList.contains('lightmode');
+      localStorage.setItem('theme-preference', isLight ? 'light' : 'dark');
+    });
 
-// bellow are the function definitions
-
-// to make sure the user don't keep touching the add project button before finishing their project adding session.
-export function InvertIsProjAddBtnActive() {
-    isProjAddBtnActive = !isProjAddBtnActive;
-}
-
-// bellow are the Function calls and Event Listeners
-
-(async function startApp() {
-    await initStorage(); // ensure storage is initialized before rendering
-
-    renderProjects(1);
-
-    renderTasks();
-})();
-
-addProjectBtn.addEventListener('click', () => {
-    if (isProjAddBtnActive) {
-        initProjectIntake();
-        InvertIsProjAddBtnActive();
+    // Check for saved preference on load
+    if (localStorage.getItem('theme-preference') === 'light') {
+      document.body.classList.add('lightmode');
     }
+  }
+
+  // --- Sidebar Mobile Toggle Logic ---
+  const aside = document.querySelector('aside');
+  const sidebarOpenBtn = document.getElementById('sidebar-toggle-btn');
+  const sidebarCloseBtn = document.getElementById('aside-off');
+
+  if (sidebarOpenBtn && aside) {
+    sidebarOpenBtn.addEventListener('click', () => {
+      // These classes match the layout logic mentioned in your CSS
+      aside.classList.add('side-bar-on');
+      aside.classList.remove('side-bar-off');
+    });
+  }
+
+  if (sidebarCloseBtn && aside) {
+    sidebarCloseBtn.addEventListener('click', () => {
+      aside.classList.add('side-bar-off');
+      aside.classList.remove('side-bar-on');
+    });
+  }
 });
-
-// === ui and toggles === //
-
-// toggle sidebar
-
-sideBarOnBtn.addEventListener('click', () => {
-    if (sideBar.classList.contains('side-bar-off')) sideBar.classList.remove('side-bar-off');
-    sideBar.classList.add('side-bar-on');
-})
-
-sideBarOffBtn.addEventListener('click', () => {
-    if (sideBar.classList.contains('side-bar-on')) sideBar.classList.remove('side-bar-on');
-    sideBar.classList.add('side-bar-off');
-})
-
-// it should have no animation if window size >= 740px
-window.addEventListener('resize', () => {
-    if (window.innerWidth >= 740) {
-        if (sideBar.classList.contains('side-bar-off')) sideBar.classList.remove('side-bar-off');
-        if (sideBar.classList.contains('side-bar-on')) sideBar.classList.remove('side-bar-on');
-    }
-})
-
-// theme toggle
-
-if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'dark');
-localStorage.getItem('theme') === 'dark' ? body.classList.remove('lightmode') : body.classList.add('lightmode')
-
-themeBtn.addEventListener('click', () => {
-    const theme = localStorage.getItem('theme');
-
-    if (theme === 'dark') {
-        localStorage.setItem('theme', 'light');
-        body.classList.add('lightmode');
-    } else {
-        localStorage.setItem('theme', 'dark');
-        body.classList.remove('lightmode');
-    }
-})

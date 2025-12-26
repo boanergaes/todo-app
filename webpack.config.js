@@ -5,7 +5,7 @@ const Dotenv = require("dotenv-webpack"); //for working with .env
 
 module.exports = {
 
-    mode: "production",
+    mode: "development",
 
     entry: {
         bundle: path.resolve(__dirname, "src/scripts/index.js")
@@ -80,7 +80,7 @@ module.exports = {
             directory: path.resolve(__dirname, "dist"),
         },
         compress: true,
-        port: 8081,
+        port: 8082,
         open: true,
         hot: true,
         watchFiles: ['src/**/*.html'], //every html file in src and its sub directories (html will not hot reload without this)

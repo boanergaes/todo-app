@@ -1,79 +1,67 @@
 {
-  "data": {
-    "projects": [
-      {
-        "id": "p_1",
-        "title": "Every day tasks",
-        "note": "These are tasks I must do daily!",
-        "tasks": {
-          "p_1-t_2": {
-            "description": "kill him",
-            "due_date": "No Due Date",
-            "priority": "Eventually",
-            "task_status": false,
-            "sub_tasks": {
-              "p_1-t_2-st_1": {
-                "description": "make him suffer",
-                "sub_task_status": false
-              }
-            }
-          }
+  "projects": [
+    {
+      "id": "p_1766731800612",
+      "title": "ef",
+      "note": "",
+      "tasks": {
+        "p_1766731800612-t_1766737806029": {
+          "id": "p_1766731800612-t_1766737806029",
+          "description": "study circuit",
+          "due_date": "2025-12-02",
+          "priority": "Soon",
+          "task_status": false,
+          "sub_tasks": {}
+        },
+        "p_1766731800612-t_1766738133525": {
+          "id": "p_1766731800612-t_1766738133525",
+          "description": "ghyjf",
+          "due_date": "No Due Date",
+          "priority": "Eventually",
+          "task_status": false,
+          "sub_tasks": {}
+        },
+        "p_1766731800612-t_1766738412025": {
+          "id": "p_1766731800612-t_1766738412025",
+          "description": "febsdfjlajdjvadjkvd",
+          "due_date": "No Due Date",
+          "priority": "Eventually",
+          "task_status": false,
+          "sub_tasks": {}
+        },
+        "p_1766731800612-t_1766738598071": {
+          "id": "p_1766731800612-t_1766738598071",
+          "description": "burry him",
+          "due_date": "No Due Date",
+          "priority": "Urgent",
+          "task_status": false,
+          "sub_tasks": {}
         }
-      },
-      {
-        "id": "p_2",
-        "title": "Work stuff",
-        "note": "These are my tasks that are Work related.",
-        "tasks": {}
-      },
-      {
-        "id": "p_3",
-        "title": "Education",
-        "note": "My Educational tasks like home works, studies, and exams.",
-        "tasks": {}
-      },
-      {
-        "id": "p_4",
-        "title": "Bucket List",
-        "note": "I want to experience these things before my day comes!",
-        "tasks": {}
-      },
-      {
-        "id": "p_11",
-        "title": "abebe",
-        "note": "",
-        "tasks": {}
-      },
-      {
-        "id": "p_12",
-        "title": "dkjanjkf",
-        "note": "",
-        "tasks": {
-          "p_12-t_1": {
-            "description": "asdfghjkl ",
-            "due_date": "No Due Date",
-            "priority": "Eventually",
-            "task_status": false,
-            "sub_tasks": {}
-          }
-        }
-      },
-      {
-        "id": "p_13",
-        "title": "dir",
-        "note": "",
-        "tasks": {}
       }
-    ],
+    },
+    {
+      "id": "p_1766731963513",
+      "title": "abebebe",
+      "note": "",
+      "tasks": {}
+    },
+    {
+      "id": "p_1766738086991",
+      "title": "kill",
+      "note": "",
+      "tasks": {}
+    }
+  ],
+  "meta": {
+    "item": {
+      "validTaskIds": {},
+      "validSubTaskIds": {},
+      "validProjId": "11"
+    },
     "validTaskIds": {
-      "p_2": 2,
-      "p_1": 3,
-      "p_13": 2,
-      "p_12": 2
+      "p_2": 2
     },
-    "validSubTaskIds": {
-      "p_1-t_2": 2
-    },
-    "validProjId": "14"
+    "validSubTaskIds": {},
+    "validProjId": "11"
   }
 }
