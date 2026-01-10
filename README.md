@@ -1,4 +1,4 @@
-# Tusketeer Todo App
+# Tusketeer Todo App -- horray!!!!!!!!!!!!!!!!!!
 Tusketeer is a light weight todo app with the following features:
     - Todos (tasks) structured under Projects
     - Add, Edit and Delete Projects
